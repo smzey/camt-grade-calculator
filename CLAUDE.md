@@ -62,10 +62,11 @@ grades, 142 subjects): `sql/seed.sql` (written, not yet run — run this next).
   This is the "anonymous per-browser identity" — no login; data still in Postgres
   keyed by this id.
 - `src/routes/catalog.js` — `GET /groups`, `GET /subjects` (step 2).
-- `src/routes/enrollments.js` — `POST /enrollments` (step 3) + `GET /enrollments`
-  (list the student's grades, joined with subject/grade info, term-sorted
-  numerically). Student comes from the cookie (not the body). POST validates:
-  presence, subject/grade exist, not a title row, grade_type vs subject.grade_type.
+- `src/routes/enrollments.js` — full enrollments resource, all cookie-scoped:
+  `POST /enrollments` (upsert; validates presence, subject/grade exist, not a title
+  row, grade_type vs subject.grade_type), `GET /enrollments` (list, joined with
+  subject/grade info, numeric term sort), `DELETE /enrollments/:subject_code`
+  (404 if the student has no such row). Student always comes from the cookie.
 - `src/routes/gpa.js` — `GET /gpa` (step 4). Uses `req.studentId`. Returns
   gpa_actual (recorded only) AND gpa_projected (incl. planning x-grades).
 - `src/routes/progress.js` — `GET /progress?plan=WIL|IS` (step 5). Uses
@@ -102,8 +103,6 @@ Known open items / next candidates:
   on the cookie being sent automatically (fetch with `credentials: 'include'`).
 - Cookie is httpOnly + sameSite=lax; `secure` flips on when `NODE_ENV=production`.
   On the VPS (HTTPS) remember to run with `NODE_ENV=production`.
-- Frontend not built yet — the API is complete enough to back one now.
-- No `DELETE /enrollments/:subject_code` (remove a recorded grade) — a UI would
-  want it alongside the list view.
+- Frontend not built yet — the enrollments API is now full CRUD, ready to back a UI.
 - Tests hit the real dev DB; fine for now, but a dedicated test DB would isolate
   them from local data entirely.

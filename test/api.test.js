@@ -278,6 +278,47 @@ describe('GET /enrollments', () => {
   });
 });
 
+describe('DELETE /enrollments/:subject_code', () => {
+  beforeEach(async () => {
+    await db.query("DELETE FROM enrollments WHERE student_id IN ('test-del', 'test-del2')");
+    await request(app)
+      .post('/enrollments')
+      .set('Cookie', asStudent('test-del'))
+      .send({ subject_code: '001101', term: '1/1', grade: 'A' });
+  });
+
+  it('removes an existing grade and echoes the deleted row', async () => {
+    const del = await request(app)
+      .delete('/enrollments/001101')
+      .set('Cookie', asStudent('test-del'));
+    assert.equal(del.status, 200);
+    assert.equal(del.body.deleted.subject_code, '001101');
+
+    // confirm it's actually gone
+    const list = await request(app).get('/enrollments').set('Cookie', asStudent('test-del'));
+    assert.equal(list.body.enrollments.length, 0);
+  });
+
+  it('404s when the student has no grade for that subject', async () => {
+    const res = await request(app)
+      .delete('/enrollments/999999')
+      .set('Cookie', asStudent('test-del'));
+    assert.equal(res.status, 404);
+  });
+
+  it("cannot delete another student's grade", async () => {
+    // test-del2 tries to delete 001101, which belongs to test-del
+    const res = await request(app)
+      .delete('/enrollments/001101')
+      .set('Cookie', asStudent('test-del2'));
+    assert.equal(res.status, 404); // not found *for this student*
+
+    // test-del's row is untouched
+    const list = await request(app).get('/enrollments').set('Cookie', asStudent('test-del'));
+    assert.equal(list.body.enrollments.length, 1);
+  });
+});
+
 describe('data isolation between cookies', () => {
   it("one student's grades do not appear in another's GPA", async () => {
     await request(app)

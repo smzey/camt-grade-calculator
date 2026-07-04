@@ -142,4 +142,36 @@ router.get('/enrollments', async (req, res) => {
   }
 });
 
+// DELETE /enrollments/:subject_code — remove the current student's grade for one
+// subject. The ':subject_code' is a ROUTE PARAMETER: Express matches any value in
+// that path segment and exposes it as req.params.subject_code (e.g. a request to
+// DELETE /enrollments/001201 gives subject_code = '001201'). We scope the delete
+// to req.studentId so a client can only ever delete its OWN rows.
+router.delete('/enrollments/:subject_code', async (req, res) => {
+  const { subject_code } = req.params;
+
+  try {
+    const result = await db.query(
+      `DELETE FROM enrollments
+       WHERE student_id = $1 AND subject_code = $2
+       RETURNING *`,
+      [req.studentId, subject_code]
+    );
+
+    // rowCount is how many rows the statement affected. 0 means this student had
+    // no grade recorded for that subject -> 404 Not Found (nothing to delete).
+    // (Some APIs return 204 here to make DELETE idempotent; we prefer 404 so the
+    // caller learns the row wasn't there.)
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: `no enrollment for subject '${subject_code}'` });
+    }
+
+    // Echo the deleted row so the client can confirm what went away.
+    res.status(200).json({ deleted: result.rows[0] });
+  } catch (err) {
+    console.error('DELETE /enrollments failed:', err);
+    res.status(500).json({ error: 'Failed to delete enrollment' });
+  }
+});
+
 module.exports = router;
