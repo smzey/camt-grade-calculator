@@ -1,5 +1,5 @@
 // src/routes/enrollments.js
-// Write endpoint: record (or update) a student's grade for one subject.
+// Write endpoint: record (or update) the current student's grade for one subject.
 //
 // The enrollments table has UNIQUE (student_id, subject_code), meaning a student
 // can hold at most one row per subject. So "record a grade" and "change a grade"
@@ -12,37 +12,68 @@ const db = require('../db');
 const router = express.Router();
 
 // POST /enrollments
-// Expected JSON body: { subject_code, term, grade, student_id? }
-//   - student_id is optional; defaults to 'me' (matches the schema default,
-//     placeholder until real users/auth exist).
+// Body: { subject_code, term, grade }. The student is taken from the cookie
+// (req.studentId), NOT the body — clients can only ever write their own data.
 router.post('/enrollments', async (req, res) => {
-  // req.body is populated by the express.json() middleware in server.js.
-  // Destructure the fields we care about; missing ones come out as undefined.
   const { subject_code, term, grade } = req.body;
-  const student_id = req.body.student_id || 'me';
+  const student_id = req.studentId; // set by the attachStudent middleware
 
-  // --- Validation ---
-  // Never trust the client. Reject bad input early with 400 (Bad Request)
-  // and a clear message, before we ever touch the database.
-  // We collect all problems so the client sees them in one response.
+  // --- 1. Presence validation (cheap, no DB) ---
   const errors = [];
   if (!subject_code) errors.push('subject_code is required');
   if (!term) errors.push('term is required');
   if (!grade) errors.push('grade is required');
-
   if (errors.length > 0) {
     return res.status(400).json({ errors });
   }
 
   try {
-    // --- The upsert ---
-    // ON CONFLICT (student_id, subject_code) names the unique constraint that
-    // might be violated. When it is, instead of erroring we DO UPDATE the
-    // existing row. EXCLUDED is a special table referring to the values we
-    // *tried* to insert — so we copy the new term/grade onto the existing row.
-    // We deliberately leave created_at untouched so it keeps the original date.
-    // RETURNING * hands back the final row (inserted or updated) so we can
-    // echo it to the client — no second SELECT needed.
+    // --- 2. Semantic validation (needs the DB) ---
+    // Foreign keys already guarantee subject_code/grade EXIST, but they can't
+    // express two business rules, so we check them up front with one query:
+    //   (a) you can't enrol in a title/section-header row (is_title = true), and
+    //   (b) the grade's type must be allowed for the subject. A subject with
+    //       grade_type 'AF' takes only letter grades; 'SU' takes only S/U;
+    //       NULL takes anything. Grades whose own type is NULL (V/W/X — e.g.
+    //       Withdraw) are allowed on any subject.
+    // Scalar subqueries return NULL when the row doesn't exist, which also lets
+    // us give a nicer "not found" message than the raw FK error.
+    const check = await db.query(
+      `SELECT
+         (SELECT is_title   FROM subjects WHERE code  = $1) AS is_title,
+         (SELECT grade_type FROM subjects WHERE code  = $1) AS subject_type,
+         (SELECT type       FROM grades   WHERE grade = $2) AS grade_type,
+         EXISTS(SELECT 1 FROM subjects WHERE code  = $1)    AS subject_exists,
+         EXISTS(SELECT 1 FROM grades   WHERE grade = $2)    AS grade_exists`,
+      [subject_code, grade]
+    );
+    const c = check.rows[0];
+
+    if (!c.subject_exists) {
+      return res.status(400).json({ error: `subject '${subject_code}' does not exist` });
+    }
+    if (!c.grade_exists) {
+      return res.status(400).json({ error: `grade '${grade}' does not exist` });
+    }
+    if (c.is_title) {
+      return res.status(400).json({
+        error: `subject '${subject_code}' is a section header, not an enrollable course`,
+      });
+    }
+    // The type-mismatch rule: only reject when BOTH sides declare a type and
+    // they differ. (subject_type NULL = accepts anything; grade_type NULL = the
+    // grade fits anywhere.)
+    if (c.subject_type && c.grade_type && c.subject_type !== c.grade_type) {
+      return res.status(400).json({
+        error: `grade '${grade}' (type ${c.grade_type}) is not valid for subject ` +
+          `'${subject_code}' (accepts ${c.subject_type})`,
+      });
+    }
+
+    // --- 3. The upsert ---
+    // ON CONFLICT names the unique constraint; on collision we UPDATE instead of
+    // erroring. EXCLUDED holds the values we tried to insert. created_at is left
+    // untouched so it keeps the original date. RETURNING * echoes the final row.
     const result = await db.query(
       `INSERT INTO enrollments (student_id, subject_code, term, grade)
        VALUES ($1, $2, $3, $4)
@@ -52,20 +83,16 @@ router.post('/enrollments', async (req, res) => {
       [student_id, subject_code, term, grade]
     );
 
-    // 200 OK (rather than 201 Created) because this may have been an update.
     res.status(200).json(result.rows[0]);
   } catch (err) {
-    // Postgres reports a foreign-key violation with SQLSTATE code '23503'.
-    // That happens here if subject_code isn't a real subject, or grade isn't a
-    // real grade (both are REFERENCES in the schema). It's the *client's* bad
-    // input, not a server fault, so translate it to 400 with a useful message.
+    // Backstop: the FK check should be unreachable now (we pre-validate), but
+    // keep translating 23503 to 400 just in case of a race.
     if (err.code === '23503') {
       return res.status(400).json({
         error: 'subject_code or grade does not exist in the catalog',
-        detail: err.detail, // pg's own explanation, e.g. "Key (grade)=(Z) is not present..."
+        detail: err.detail,
       });
     }
-    // Anything else is a genuine server-side problem.
     console.error('POST /enrollments failed:', err);
     res.status(500).json({ error: 'Failed to save enrollment' });
   }

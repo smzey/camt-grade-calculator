@@ -47,16 +47,31 @@ Full schema: `sql/schema.sql` (already run against local Postgres, db name
 grades, 142 subjects): `sql/seed.sql` (written, not yet run — run this next).
 
 ## Status / file inventory
-- `package.json` — express, pg, dotenv installed; nodemon as devDependency.
-  Scripts: `npm run dev` (nodemon), `npm start`.
+- `package.json` — deps: express, pg, dotenv, cookie-parser. devDeps: nodemon,
+  supertest. Scripts: `npm run dev` (nodemon), `npm start`, `npm test` (node --test).
 - `.env` — `DATABASE_URL`, `PORT=3000`. (gitignored — don't commit)
-- `sql/schema.sql` — applied (19 groups, 23 grades, 142 subjects, 0 enrollments).
+- `sql/schema.sql` — applied (19 groups, 23 grades, 142 subjects).
 - `sql/seed.sql` — applied.
-- `src/db.js` — pg Pool wrapper (`db.query(text, params)`), exports pool too.
-- `src/server.js` — Express app, `express.json()` middleware, `GET /health`
-  (checks DB via `SELECT 1`), mounts the catalog router.
+- `src/db.js` — pg Pool wrapper (`db.query(text, params)`), exports `pool` too.
+- `src/app.js` — builds + EXPORTS the Express app (middleware: json, cookieParser,
+  attachStudent; `GET /health`; mounts all routers). No `.listen` here — that's
+  what makes it testable.
+- `src/server.js` — thin entry point: `require('./app')` then `app.listen(PORT)`.
+- `src/middleware/student.js` — `attachStudent`: reads the `student_id` cookie
+  (mints a random `u_<uuid>` + Set-Cookie if absent), sets `req.studentId`.
+  This is the "anonymous per-browser identity" — no login; data still in Postgres
+  keyed by this id.
 - `src/routes/catalog.js` — `GET /groups`, `GET /subjects` (step 2).
-- `src/routes/enrollments.js` — `POST /enrollments` upsert (step 3).
+- `src/routes/enrollments.js` — `POST /enrollments` (step 3). Student comes from
+  the cookie (not the body). Validates: presence, subject/grade exist, not a
+  title row, and grade_type vs subject.grade_type. Then upserts.
+- `src/routes/gpa.js` — `GET /gpa` (step 4). Uses `req.studentId`. Returns
+  gpa_actual (recorded only) AND gpa_projected (incl. planning x-grades).
+- `src/routes/progress.js` — `GET /progress?plan=WIL|IS` (step 5). Uses
+  `req.studentId`. Recursive CTE rolls each group's passed (is_keep) credits up
+  its subtree; compares to req_wil/req_is; returns {required, earned, met, remaining}.
+- `test/api.test.js` — 21 supertest integration tests over the real seeded DB;
+  acts as `test-*` students (via Cookie header) and cleans them up. `npm test`.
 
 ## Remaining roadmap
 1. **Express server + DB connection** (`src/db.js` — `pg` Pool using
@@ -72,7 +87,20 @@ grades, 142 subjects): `sql/seed.sql` (written, not yet run — run this next).
    compare against `req_wil`/`req_is` depending on the student's chosen plan
 6. **Testing** — verify all endpoints against the seeded data with curl/Postman
 
-Steps done: **#1 (server + DB + /health)**, **#2 (`GET /groups`, `GET /subjects`)**,
-**#3 (`POST /enrollments`, upsert)**.
-Next step to work on: **#4, GPA calculation** (join enrollments -> grades, filter
-`is_cal`, weight by `subjects.credit`: `SUM(point*credit)/SUM(credit)`).
+All roadmap steps #1–#6 done and verified. Since then also added:
+- **grade_type + title-row validation** on `POST /enrollments` (DONE).
+- **Cookie-based anonymous identity** — `student_id` now comes from a per-browser
+  cookie, not a hardcoded 'me'. No login; data stays in Postgres keyed by the
+  cookie id. This was a deliberate product choice: "save user data per-browser,
+  not behind an online account."
+- **Automated test suite** — `npm test`, 21 supertest integration tests (DONE).
+
+Known open items / next candidates:
+
+- No frontend yet — API only. A browser UI would consume these endpoints and rely
+  on the cookie being sent automatically (fetch with `credentials: 'include'`).
+- Cookie is httpOnly + sameSite=lax; `secure` flips on when `NODE_ENV=production`.
+  On the VPS (HTTPS) remember to run with `NODE_ENV=production`.
+- No `GET /enrollments` (list a student's recorded grades) — likely needed by a UI.
+- Tests hit the real dev DB; fine for now, but a dedicated test DB would isolate
+  them from local data entirely.
