@@ -1,18 +1,16 @@
 /* theme.css — the Tailwind v4 entry point AND the design system's token source.
  *
  * How Tailwind v4 works here (different from v3 — no tailwind.config.js):
- *   - We import only Tailwind's `theme` and `utilities` layers, NOT `base`.
- *     Skipping `base` means we don't ship Preflight (Tailwind's global CSS
- *     reset) — a shared component library shouldn't reset its host app's page.
- *   - The `@theme { ... }` block below defines design tokens. Each token is a
- *     real CSS variable AND makes Tailwind generate matching utilities:
- *       --color-surface  ->  bg-surface / text-surface / border-surface
- *       --radius-xl      ->  rounded-xl
- *       --shadow-sm      ->  shadow-sm
- *     So there is ONE source of truth for both the CSS variables a consumer can
- *     override and the class names our components use.
- *   - `@source` tells Tailwind which files to scan for class names when tree-
- *     shaking utilities into the built stylesheet. */
+ *   - We import only Tailwind's `theme` and `utilities` layers, NOT `base`, so
+ *     we don't ship Preflight (Tailwind's global reset) from a library.
+ *   - Each token in `@theme` is a real CSS variable AND generates a matching
+ *     utility: --color-surface -> bg-surface, --radius-xl -> rounded-xl, etc.
+ *     One source of truth for both the variables consumers can override and the
+ *     classes our components use.
+ *   - `@source` tells Tailwind which files to scan for class names.
+ *
+ * Palette: warm "CAMT copper" — charcoal ink on a warm paper background, copper
+ * accents, olive-green for met requirements. (The dashboard redesign.) */
 
 @layer theme, base, components, utilities;
 @import 'tailwindcss/theme.css' layer(theme);
@@ -20,46 +18,61 @@
 
 @source './**/*.{js,jsx}';
 
-@theme {
-  /* --- Font --- */
+/* `static` = emit ALL these variables to :root even if no Tailwind utility uses
+ * them. Needed because consumers (the client's own stylesheet) reference tokens
+ * like --color-gpa-from via var(), and Tailwind can't see that usage to keep
+ * them. Without `static`, unused tokens get tree-shaken out. */
+@theme static {
+  /* --- Fonts --- */
   --font-sans: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  --font-display: 'Sora', system-ui, sans-serif; /* headings / values / gauges -> font-display */
 
   /* --- Text colors --- */
-  --color-ink: #1f2937; /* primary body text -> text-ink */
-  --color-ink-strong: #374151; /* labels on tints  -> text-ink-strong */
-  --color-muted: #6b7280; /* secondary text   -> text-muted */
-  --color-subtle: #9ca3af; /* tertiary text    -> text-subtle */
+  --color-ink: #2b2420; /* primary text        -> text-ink */
+  --color-ink-strong: #3a322c; /* ink-soft / names    -> text-ink-strong */
+  --color-muted: #8a7d72; /* secondary text      -> text-muted */
+  --color-subtle: #a89984; /* tertiary text       -> text-subtle */
 
   /* --- Surface colors --- */
-  --color-bg: #f8fafc; /* page background       -> bg-bg */
-  --color-surface: #ffffff; /* cards / panels        -> bg-surface */
-  --color-surface-2: #f1f5f9; /* inset tiles           -> bg-surface-2 */
-  --color-surface-accent: #eef2ff; /* accent-tinted tile    -> bg-surface-accent */
+  --color-bg: #f2ece3; /* warm paper page bg  -> bg-bg */
+  --color-surface: #ffffff; /* cards / panels      -> bg-surface */
+  --color-surface-2: #f1e7db; /* chips / inset tint  -> bg-surface-2 */
+  --color-surface-accent: #f7ede1; /* soft warm tint      -> bg-surface-accent */
 
   /* --- Line colors --- */
-  --color-border: #e5e7eb; /* default borders / track -> border-border */
-  --color-border-strong: #d1d5db; /* form controls           -> border-border-strong */
-  --color-divider: #f1f5f9; /* subtle row dividers     -> border-divider */
+  --color-border: #e8dfd3; /* card / default border -> border-border */
+  --color-border-strong: #ddcfba; /* form-control border   -> border-border-strong */
+  --color-divider: #f3ece1; /* category-row divider  -> border-divider */
+  --color-divider-soft: #f8f2ea; /* subject-row divider   -> border-divider-soft */
 
-  /* --- Status colors --- */
-  --color-fill: #94a3b8; /* neutral progress fill */
-  --color-success: #22c55e; /* met / positive fill */
-  --color-danger-bg: #fef2f2;
-  --color-danger-border: #fecaca;
-  --color-danger-ink: #b91c1c;
+  /* --- Accent / status colors --- */
+  --color-copper: #b3532f; /* in-progress fill / accent */
+  --color-copper-soft: #e8a97a; /* copper gradient start */
+  --color-success: #5f8a52; /* met / positive (olive) */
+  --color-tan: #b08a63; /* chevrons / soft accents */
+  --color-track: #eadfd0; /* progress-bar track */
+  --color-ring-track: #e9dcc9; /* score-ring track / connectors */
+  --color-gpa-from: #f3c9a4; /* GPA strip gradient start */
+  --color-gpa-to: #d98a5e; /* GPA strip gradient end */
+
+  /* --- Banner tones (error/info/success) --- */
+  --color-danger-bg: #fbeae3;
+  --color-danger-border: #f0c4b2;
+  --color-danger-ink: #a23d1c;
   --color-info-bg: #eef2ff;
   --color-info-border: #c7d2fe;
   --color-info-ink: #3730a3;
-  --color-ok-bg: #f0fdf4;
-  --color-ok-border: #bbf7d0;
-  --color-ok-ink: #15803d;
+  --color-ok-bg: #eef3ea;
+  --color-ok-border: #cfe0c6;
+  --color-ok-ink: #456b3a;
 
-  /* --- Radii (override Tailwind defaults to match the original UI) --- */
+  /* --- Radii --- */
   --radius-sm: 6px;
   --radius-md: 8px;
   --radius-lg: 10px;
-  --radius-xl: 12px;
+  --radius-xl: 16px; /* the main card */
 
   /* --- Elevation --- */
   --shadow-sm: 0 1px 3px rgb(0 0 0 / 0.05);
+  --shadow-card: 0 10px 34px rgb(70 50 30 / 0.09); /* the redesign's raised card -> shadow-card */
 }

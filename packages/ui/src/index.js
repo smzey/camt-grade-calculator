@@ -11,3 +11,5 @@ export { StatCard } from './StatCard.jsx';
 export { Select } from './Select.jsx';
 export { Badge } from './Badge.jsx';
 export { Banner } from './Banner.jsx';
+export { ScoreRing } from './ScoreRing.jsx';
+export { SegmentedToggle } from './SegmentedToggle.jsx';

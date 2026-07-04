@@ -15,6 +15,7 @@ const catalogRoutes = require('./routes/catalog'); // GET /groups, /subjects
 const enrollmentRoutes = require('./routes/enrollments'); // POST/GET/DELETE /enrollments
 const gpaRoutes = require('./routes/gpa'); // GET /gpa
 const progressRoutes = require('./routes/progress'); // GET /progress
+const importRoutes = require('./routes/import'); // POST /import/preview, /import/commit
 
 const app = express();
 
@@ -52,6 +53,7 @@ api.use('/', catalogRoutes);
 api.use('/', enrollmentRoutes);
 api.use('/', gpaRoutes);
 api.use('/', progressRoutes);
+api.use('/', importRoutes);
 
 app.use('/api', api);
 

@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+
+<helmet data-dc-atomics>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  body { margin:0; background:#f2ece3; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+  .dv-turn { padding: 40px 44px 60px; }
+  .dv-thd { display:flex; align-items:baseline; gap:10px; margin:0 0 6px; }
+  .dv-tid { font:600 10px ui-monospace, Menlo, monospace; padding:3px 7px; background:#2b2420; color:#fff; border-radius:4px; text-decoration:none; }
+  .dv-tname { font:700 15px/1.3 Sora, system-ui, sans-serif; color:#2b2420; }
+  .dv-tsub { margin: 0 0 26px; font:13px/1.6 system-ui, sans-serif; color:#5b4f45; max-width:760px; }
+  .dv-opts { display:flex; flex-wrap:wrap; gap:32px; align-items:flex-start; }
+  .dv-opt { flex:none; display:flex; flex-direction:column; gap:10px; scroll-margin-top:16px; }
+  .dv-oid { font:600 10.5px ui-monospace, Menlo, monospace; padding:3px 8px; background:rgba(43,36,32,.08); color:#2b2420; border-radius:5px; text-decoration:none; }
+  .dv-olabel { display:flex; align-items:baseline; gap:8px; font:400 12px/1.4 system-ui, sans-serif; color:#5b4f45; max-width:660px; }
+  .dv-card { max-width:100%; background:#fff; border:1px solid #e8dfd3; border-radius:14px; box-shadow:0 8px 28px rgba(70,50,30,.08); overflow:hidden; }
+  .dv-next { margin: 26px 0 0; font:12px/1.6 system-ui, sans-serif; color:#8a7d72; }
+  select { font-family: inherit; }
+  ::-webkit-scrollbar { width:9px; height:9px; }
+  ::-webkit-scrollbar-thumb { background:#ddd0c0; border-radius:6px; }
+</style>
+</helmet>
+
+<section class="dv-turn" id="t2">
+  <div class="dv-thd"><a class="dv-tid" href="#t2">2</a><span class="dv-tname">Roadmap scores of <a class="dv-oid" href="#1c">1c</a> + categories of <a class="dv-oid" href="#1b">1b</a></span></div>
+  <p class="dv-tsub">
+    The three graduation "score" rings from <a class="dv-oid" href="#1c">1c</a> sit up top as the overview — tap one to
+    focus that pillar — and below it is <a class="dv-oid" href="#1b">1b</a>'s two-pane category browser: a quick-nav
+    rail on the left, the expandable subject tree on the right. Grade dropdowns stay live.
+  </p>
+  <div class="dv-opts">
+    <div class="dv-opt" id="2a">
+      <div class="dv-olabel"><a class="dv-oid" href="#2a">2a</a>Score rings as the hero, rail + tree beneath</div>
+      <div class="dv-card" style="width:780px">
+        <div style="height:820px;overflow-y:auto;background:#fbf7f2">
+          <sc-if value="{{ ready }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:20px 24px 8px;display:flex;align-items:center;justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:9px">
+              <img src="assets/camt-logo.jpg" style="height:24px;width:auto;object-fit:contain" alt="CAMT">
+              <span style="font:700 15px Sora,sans-serif;color:#2b2420">Grade Calculator</span>
+            </div>
+            <div style="display:flex;background:#f1e7db;border-radius:999px;padding:3px;gap:2px">
+              <div onClick="{{ d.setWil }}" style="padding:6px 15px;border-radius:999px;font-size:11.5px;font-weight:700;cursor:pointer;{{ d.wilPillStyle }}">WIL</div>
+              <div onClick="{{ d.setIs }}" style="padding:6px 15px;border-radius:999px;font-size:11.5px;font-weight:700;cursor:pointer;{{ d.isPillStyle }}">IS</div>
+            </div>
+          </div>
+
+          <div style="padding:16px 26px 6px;display:flex;align-items:flex-start;gap:0">
+            <sc-for list="{{ d.stations }}" as="st" hint-placeholder-count="3">
+              <div style="display:flex;align-items:center;flex:{{ st.flexGrow }}">
+                <div onClick="{{ st.onClick }}" style="display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer;flex:0 0 auto">
+                  <div style="width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:{{ st.ringBg }};box-shadow:{{ st.ringShadow }}">
+                    <div style="width:56px;height:56px;border-radius:50%;background:#fbf7f2;display:flex;flex-direction:column;align-items:center;justify-content:center;font:800 15px Sora,sans-serif;color:#2b2420">{{ st.pctText }}<span style="font:600 9px system-ui;color:#8a7d72">{{ st.creditText }}</span></div>
+                  </div>
+                  <div style="font-size:11.5px;font-weight:700;color:#3a322c;max-width:96px;text-align:center;line-height:1.2">{{ st.name }}</div>
+                </div>
+                <sc-if value="{{ st.hasConnector }}">
+                  <div style="flex:1;height:3px;background:{{ st.connectorFill }};margin:0 -2px 26px;border-radius:2px"></div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="margin:12px 24px 4px;padding:11px 16px;border-radius:12px;background:linear-gradient(135deg,#f3c9a4,#d98a5e);display:flex;justify-content:space-between;align-items:center">
+            <div style="display:flex;gap:26px">
+              <div>
+                <div style="font:800 20px Sora,sans-serif;color:#fff">{{ d.gpaActualLabel }}</div>
+                <div style="font-size:10px;color:#fff;opacity:.9;text-transform:uppercase;letter-spacing:.04em">GPA actual</div>
+              </div>
+              <div>
+                <div style="font:800 20px Sora,sans-serif;color:#fff">{{ d.gpaProjLabel }}</div>
+                <div style="font-size:10px;color:#fff;opacity:.9;text-transform:uppercase;letter-spacing:.04em">GPA projected</div>
+              </div>
+            </div>
+            <div style="font-size:26px">🎓</div>
+          </div>
+
+          <div style="display:flex;margin-top:8px;border-top:1px solid #f1e7db">
+            <div style="flex:0 0 196px;padding:16px 10px;border-right:1px solid #f1e7db">
+              <div style="font-size:10.5px;font-weight:700;color:#a89984;text-transform:uppercase;letter-spacing:.06em;padding:4px 10px 8px">{{ d.selectedTopName }}</div>
+              <sc-for list="{{ d.railItems }}" as="ri" hint-placeholder-count="3">
+                <div onClick="{{ ri.onClick }}" style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;cursor:pointer;margin-bottom:2px;background:{{ ri.bg }}">
+                  <span style="font-size:12.5px;font-weight:600;color:#3a322c;flex:1;line-height:1.25">{{ ri.name }}</span>
+                  <span style="font-size:10.5px;color:{{ ri.dotColor }};font-weight:700">{{ ri.pctText }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="flex:1;padding:10px 20px 28px;min-width:0">
+              <sc-for list="{{ d.rows }}" as="row" hint-placeholder-count="6">
+                <sc-if value="{{ row.visible }}">
+                  <sc-if value="{{ row.isGroup }}">
+                    <div onClick="{{ row.onToggle }}" style="display:flex;align-items:center;gap:10px;padding:10px 4px;padding-left: {{ row.indent }};cursor:pointer;border-bottom:1px solid #f3ece1">
+                      <span style="display:inline-block;width:14px;color:#b08a63;font-size:11px;transform:{{ row.chevronRot }}">▶</span>
+                      <span style="font-weight:700;font-size:13.5px;color:#2b2420;flex:0 0 auto;max-width:220px">{{ row.name }}</span>
+                      <div style="flex:1;position:relative;height:9px;border-radius:6px;background:#eadfd0;overflow:hidden">
+                        <div style="height:100%;width:{{ row.pctPercent }}%;background:{{ row.barFill }};border-radius:6px"></div>
+                      </div>
+                      <span style="font-size:11.5px;color:#8a7d72;width:56px;text-align:right;font-variant-numeric:tabular-nums">{{ row.earned }}/{{ row.req }}</span>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ row.isSubject }}">
+                    <div style="display:flex;align-items:center;gap:10px;padding:7px 4px;padding-left: {{ row.indent }};border-bottom:1px solid #f8f2ea">
+                      <span style="width:64px;flex:0 0 auto;font-size:11px;color:#a89984;font-variant-numeric:tabular-nums">{{ row.code }}</span>
+                      <span style="flex:1;font-size:13px;color:#3a322c">{{ row.name }}</span>
+                      <span style="flex:0 0 auto;font-size:10.5px;color:#7a6a5c;background:#f1e7db;padding:2px 7px;border-radius:999px">{{ row.credit }} cr</span>
+                      <select value="{{ row.value }}" onChange="{{ row.onChange }}" style="flex:0 0 auto;width:92px;font-size:12.5px;border:1px solid #ddcfba;border-radius:6px;padding:4px 6px;background:#fff;color:#2b2420">
+                        <option value="">—</option>
+                        <optgroup label="Grade">
+                          <sc-for list="{{ row.realGrades }}" as="g" hint-placeholder-count="3"><option value="{{ g.grade }}">{{ g.label }}</option></sc-for>
+                        </optgroup>
+                        <sc-if value="{{ row.hasPlanning }}">
+                          <optgroup label="Planned">
+                            <sc-for list="{{ row.planningGrades }}" as="g" hint-placeholder-count="2"><option value="{{ g.grade }}">{{ g.label }}</option></sc-for>
+                          </optgroup>
+                        </sc-if>
+                      </select>
+                    </div>
+                  </sc-if>
+                </sc-if>
+              </sc-for>
+            </div>
+          </div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p class="dv-next">Try next: "make the rings show credits not %" · "let a rail click scroll instead of expand" · "make <a href="#2a">2a</a> the final and drop the rest"</p>
+</section>
+
+<section class="dv-turn" id="t1">
+  <div class="dv-thd"><a class="dv-tid" href="#t1">1</a><span class="dv-tname">CAMT Grade Calculator — dashboard redesign</span></div>
+  <p class="dv-tsub">
+    Today's app (Vite/React + <code>@camt/ui</code>) is a single flat page: a sticky bar with a plan/term picker
+    and two GPA tiles, then every one of the 19 categories and their subjects listed edge-to-edge — heavy for a
+    142-course catalog. All three options below share the same real catalog, grades, and a partially-filled
+    second-year transcript; categories are collapsed by default and expand on click. Palette pulls the copper/rust
+    gradient and charcoal from the CAMT mark; type is Sora for headings over system UI for body copy. Grade
+    dropdowns are live — try changing one to see progress bars and GPA recompute.
+  </p>
+  <div class="dv-opts">
+
+    <div class="dv-opt" id="1a">
+      <div class="dv-olabel"><a class="dv-oid" href="#1a">1a</a>Refined &amp; tabbed — closest to today, polished</div>
+      <div class="dv-card" style="width:720px">
+        <div style="height:800px;overflow-y:auto;background:#faf5ef">
+          <sc-if value="{{ ready }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:22px 24px 10px;background:linear-gradient(180deg,#fff,#faf5ef);position:sticky;top:0;z-index:2;border-bottom:1px solid #eee2d4">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px">
+              <div style="display:flex;align-items:center;gap:10px">
+                <img src="assets/camt-logo.jpg" style="height:26px;width:auto;object-fit:contain" alt="CAMT">
+                <span style="font:700 16px Sora,sans-serif;color:#2b2420">Grade Calculator</span>
+              </div>
+              <div style="display:flex;background:#f1e7db;border-radius:999px;padding:3px;gap:2px">
+                <div onClick="{{ a.setWil }}" style="padding:'6px 16px';borderRadius:999px;font-size:12px;font-weight:700;cursor:pointer;padding:6px 16px;{{ a.wilPillStyle }}">WIL</div>
+                <div onClick="{{ a.setIs }}" style="padding:6px 16px;borderRadius:999px;font-size:12px;font-weight:700;cursor:pointer;{{ a.isPillStyle }}">IS</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:10px">
+              <div style="flex:1;background:#f1e7db;border-radius:10px;padding:12px 14px">
+                <div style="font:800 24px Sora,sans-serif;color:#2b2420">{{ a.gpaActualLabel }}</div>
+                <div style="font-size:11px;color:#8a7d72;text-transform:uppercase;letter-spacing:.04em;margin-top:2px">GPA actual · {{ a.creditsActual }} cr</div>
+              </div>
+              <div style="flex:1;border-radius:10px;padding:12px 14px;background:linear-gradient(135deg,#f3c9a4,#d98a5e)">
+                <div style="font:800 24px Sora,sans-serif;color:#fff">{{ a.gpaProjLabel }}</div>
+                <div style="font-size:11px;color:#fff;opacity:.9;text-transform:uppercase;letter-spacing:.04em;margin-top:2px">GPA projected · {{ a.creditsProj }} cr</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="padding:6px 24px 28px">
+            <sc-for list="{{ a.rows }}" as="row" hint-placeholder-count="6">
+              <sc-if value="{{ row.visible }}">
+                <sc-if value="{{ row.isGroup }}">
+                  <div onClick="{{ row.onToggle }}" style="display:flex;align-items:center;gap:10px;padding:10px 4px;padding-left: {{ row.indent }};cursor:pointer;border-bottom:1px solid #f3ece1">
+                    <span style="display:inline-block;width:14px;color:#b08a63;font-size:11px;transform:{{ row.chevronRot }}">▶</span>
+                    <span style="font-weight:700;font-size:13.5px;color:#2b2420;flex:0 0 auto;max-width:230px">{{ row.name }}</span>
+                    <div style="flex:1;position:relative;height:9px;border-radius:6px;background:#eadfd0;overflow:hidden">
+                      <div style="height:100%;width:{{ row.pctPercent }}%;background:{{ row.barFill }};border-radius:6px"></div>
+                    </div>
+                    <span style="font-size:11.5px;color:#8a7d72;width:56px;text-align:right;font-variant-numeric:tabular-nums">{{ row.earned }}/{{ row.req }}</span>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ row.isSubject }}">
+                  <div style="display:flex;align-items:center;gap:10px;padding:7px 4px;padding-left: {{ row.indent }};border-bottom:1px solid #f8f2ea">
+                    <span style="width:64px;flex:0 0 auto;font-size:11px;color:#a89984;font-variant-numeric:tabular-nums">{{ row.code }}</span>
+                    <span style="flex:1;font-size:13px;color:#3a322c">{{ row.name }}</span>
+                    <span style="flex:0 0 auto;font-size:10.5px;color:#7a6a5c;background:#f1e7db;padding:2px 7px;border-radius:999px">{{ row.credit }} cr</span>
+                    <select value="{{ row.value }}" onChange="{{ row.onChange }}" style="flex:0 0 auto;width:92px;font-size:12.5px;border:1px solid #ddcfba;border-radius:6px;padding:4px 6px;background:#fff;color:#2b2420">
+                      <option value="">—</option>
+                      <optgroup label="Grade">
+                        <sc-for list="{{ row.realGrades }}" as="g" hint-placeholder-count="3"><option value="{{ g.grade }}">{{ g.label }}</option></sc-for>
+                      </optgroup>
+                      <sc-if value="{{ row.hasPlanning }}">
+                        <optgroup label="Planned">
+                          <sc-for list="{{ row.planningGrades }}" as="g" hint-placeholder-count="2"><option value="{{ g.grade }}">{{ g.label }}</option></sc-for>
+                        </optgroup>
+                      </sc-if>
+                    </select>
+                  </div>
+                </sc-if>
+              </sc-if>
+            </sc-for>
+          </div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+
+    <div class="dv-opt" id="1b">
+      <div class="dv-olabel"><a class="dv-oid" href="#1b">1b</a>Progress-first &amp; encouraging — big status banner, side rail</div>
+      <div class="dv-card" style="width:760px">
+        <div style="height:800px;overflow-y:auto;background:#fff">
+          <sc-if value="{{ ready }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:22px 24px 18px;background:linear-gradient(135deg,#3a2a20,#8a3a24 55%,#d98a5e);color:#fff">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+              <img src="assets/camt-logo.jpg" style="height:22px;width:auto;object-fit:contain;filter:brightness(0) invert(1);opacity:.9" alt="CAMT">
+              <span style="font:700 14px Sora,sans-serif;letter-spacing:.02em;opacity:.9">Grade Calculator</span>
+            </div>
+            <div style="font:800 26px/1.25 Sora,sans-serif">{{ b.encourageHeadline }}</div>
+            <div style="font-size:13px;opacity:.85;margin-top:4px">{{ b.encourageSub }}</div>
+            <div style="margin-top:16px;height:12px;border-radius:8px;background:rgba(255,255,255,.25);overflow:hidden">
+              <div style="height:100%;width:{{ b.overallPctPercent }}%;background:#fff;border-radius:8px"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:16px;gap:10px">
+              <div>
+                <div style="font:800 20px Sora,sans-serif">{{ b.gpaActualLabel }}</div>
+                <div style="font-size:10.5px;opacity:.8;text-transform:uppercase;letter-spacing:.04em">GPA actual</div>
+              </div>
+              <div>
+                <div style="font:800 20px Sora,sans-serif">{{ b.gpaProjLabel }}</div>
+                <div style="font-size:10.5px;opacity:.8;text-transform:uppercase;letter-spacing:.04em">GPA projected</div>
+              </div>
+              <div style="display:flex;background:rgba(255,255,255,.18);border-radius:999px;padding:3px;gap:2px;align-self:center">
+                <div onClick="{{ b.setWil }}" style="padding:5px 13px;border-radius:999px;font-size:11px;font-weight:700;cursor:pointer;{{ b.wilPillStyle }}">WIL</div>
+                <div onClick="{{ b.setIs }}" style="padding:5px 13px;border-radius:999px;font-size:11px;font-weight:700;cursor:pointer;{{ b.isPillStyle }}">IS</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex">
+            <div style="flex:0 0 190px;padding:16px 10px;border-right:1px solid #f1e7db">
+              <div style="font-size:10.5px;font-weight:700;color:#a89984;text-transform:uppercase;letter-spacing:.06em;padding:4px 10px 8px">Categories</div>
+              <sc-for list="{{ b.railItems }}" as="ri" hint-placeholder-count="3">
+                <div onClick="{{ ri.onClick }}" style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;cursor:pointer;margin-bottom:2px;background:{{ ri.bg }}">
+                  <span style="font-size:12.5px;font-weight:600;color:#3a322c;flex:1">{{ ri.name }}</span>
+                  <span style="font-size:10.5px;color:{{ ri.dotColor }}">{{ ri.pctText }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="flex:1;padding:10px 20px 28px;min-width:0">
+              <sc-for list="{{ b.rows }}" as="row" hint-placeholder-count="6">
+                <sc-if value="{{ row.visible }}">
+                  <sc-if value="{{ row.isGroup }}">
+                    <div onClick="{{ row.onToggle }}" style="display:flex;align-items:center;gap:10px;padding:10px 4px;padding-left: {{ row.indent }};cursor:pointer;border-bottom:1px solid #f3ece1">
+                      <span style="display:inline-block;width:14px;color:#b08a63;font-size:11px;transform:{{ row.chevronRot }}">▶</span>
+                      <span style="font-weight:700;font-size:13.5px;color:#2b2420;flex:0 0 auto;max-width:230px">{{ row.name }}</span>
+                      <div style="flex:1;position:relative;height:9px;border-radius:6px;background:#eadfd0;overflow:hidden">
+                        <div style="height:100%;width:{{ row.pctPercent }}%;background:{{ row.barFill }};border-radius:6px"></div>
+                      </div>
+                      <span style="font-size:11.5px;color:#8a7d72;width:56px;text-align:right;font-variant-numeric:tabular-nums">{{ row.earned }}/{{ row.req }}</span>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ row.isSubject }}">
+                    <div style="display:flex;align-items:center;gap:10px;padding:7px 4px;padding-left: {{ row.indent }};border-bottom:1px solid #f8f2ea">
+                      <span style="width:64px;flex:0 0 auto;font-size:11px;color:#a89984;font-variant-numeric:tabular-nums">{{ row.code }}</span>
+                      <span style="flex:1;font-size:13px;color:#3a322c">{{ row.name }}</span>
+                      <span style="flex:0 0 auto;font-size:10.5px;color:#7a6a5c;background:#f1e7db;padding:2px 7px;border-radius:999px">{{ row.credit }} cr</span>
+                      <select value="{{ row.value }}" onChange="{{ row.onChange }}" style="flex:0 0 auto;width:92px;font-size:12.5px;border:1px solid #ddcfba;border-radius:6px;padding:4px 6px;background:#fff;color:#2b2420">
+                        <option value="">—</option>
+                        <optgroup label="Grade">
+                          <sc-for list="{{ row.realGrades }}" as="g" hint-placeholder-count="3"><option value="{{ g.grade }}">{{ g.label }}</option></sc-for>
+                        </optgroup>
+                        <sc-if value="{{ row.hasPlanning }}">
+                          <optgroup label="Planned">
+                            <sc-for list="{{ row.planningGrades }}" as="g" hint-placeholder-count="2"><option value="{{ g.grade }}">{{ g.label }}</option></sc-for>
+                          </optgroup>
+                        </sc-if>
+                      </select>
+                    </div>
+                  </sc-if>
+                </sc-if>
+              </sc-for>
+            </div>
+          </div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+
+    <div class="dv-opt" id="1c">
+      <div class="dv-olabel"><a class="dv-oid" href="#1c">1c</a>Novel — graduation roadmap, stations you tap to open</div>
+      <div class="dv-card" style="width:720px">
+        <div style="height:800px;overflow-y:auto;background:#fbf7f2">
+          <sc-if value="{{ ready }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:20px 22px 8px;display:flex;align-items:center;justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:9px">
+              <img src="assets/camt-logo.jpg" style="height:22px;width:auto;object-fit:contain" alt="CAMT">
+              <span style="font:700 14px Sora,sans-serif;color:#2b2420">Your road to graduation</span>
+            </div>
+            <div style="display:flex;background:#f1e7db;border-radius:999px;padding:3px;gap:2px">
+              <div onClick="{{ c.setWil }}" style="padding:5px 13px;border-radius:999px;font-size:11px;font-weight:700;cursor:pointer;{{ c.wilPillStyle }}">WIL</div>
+              <div onClick="{{ c.setIs }}" style="padding:5px 13px;border-radius:999px;font-size:11px;font-weight:700;cursor:pointer;{{ c.isPillStyle }}">IS</div>
+            </div>
+          </div>
+
+          <div style="padding:18px 22px 4px;display:flex;align-items:flex-start;gap:0">
+            <sc-for list="{{ c.stations }}" as="st" hint-placeholder-count="3">
+              <div style="display:flex;align-items:center;flex:{{ st.flexGrow }}">
+                <div onClick="{{ st.onClick }}" style="display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;flex:0 0 auto">
+                  <div style="width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:{{ st.ringBg }};box-shadow:{{ st.ringShadow }}">
+                    <div style="width:50px;height:50px;border-radius:50%;background:#fbf7f2;display:flex;align-items:center;justify-content:center;font:800 13px Sora,sans-serif;color:#2b2420">{{ st.pctText }}</div>
+                  </div>
+                  <div style="font-size:11px;font-weight:700;color:#3a322c;max-width:84px;text-align:center;line-height:1.2">{{ st.name }}</div>
+                </div>
+                <sc-if value="{{ st.hasConnector }}">
+                  <div style="flex:1;height:3px;background:{{ st.connectorFill }};margin:0 -2px 22px;border-radius:2px"></div>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="margin:18px 22px 0;padding:12px 14px;border-radius:12px;background:linear-gradient(135deg,#f3c9a4,#d98a5e);display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font:800 20px Sora,sans-serif;color:#fff">{{ c.gpaActualLabel }}</div>
+              <div style="font-size:10.5px;color:#fff;opacity:.9;text-transform:uppercase;letter-spacing:.04em">GPA actual · projected {{ c.gpaProjLabel }}</div>
+            </div>
+            <div style="font-size:28px">🎓</div>
+          </div>
+
+          <div style="padding:16px 22px 28px">
+            <div style="font:700 13px Sora,sans-serif;color:#2b2420;margin-bottom:8px">{{ c.selectedTopName }}</div>
+            <sc-for list="{{ c.rows }}" as="row" hint-placeholder-count="6">
+              <sc-if value="{{ row.visible }}">
+                <sc-if value="{{ row.isGroup }}">
+                  <div onClick="{{ row.onToggle }}" style="display:flex;align-items:center;gap:10px;padding:9px 4px;padding-left: {{ row.indent }};cursor:pointer;border-bottom:1px solid #f0e6d8">
+                    <span style="display:inline-block;width:14px;color:#b08a63;font-size:11px;transform:{{ row.chevronRot }}">▶</span>
+                    <span style="font-weight:700;font-size:13px;color:#2b2420;flex:0 0 auto;max-width:210px">{{ row.name }}</span>
+                    <div style="flex:1;position:relative;height:8px;border-radius:6px;background:#ecdfcd;overflow:hidden">
+                      <div style="height:100%;width:{{ row.pctPercent }}%;background:{{ row.barFill }};border-radius:6px"></div>
+                    </div>
+                    <span style="font-size:11px;color:#8a7d72;width:52px;text-align:right;font-variant-numeric:tabular-nums">{{ row.earned }}/{{ row.req }}</span>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ row.isSubject }}">
+                  <div style="display:flex;align-items:center;gap:10px;padding:6px 4px;padding-left: {{ row.indent }};border-bottom:1px solid #f8f2ea">
+                    <span style="width:60px;flex:0 0 auto;font-size:11px;color:#a89984;font-variant-numeric:tabular-nums">{{ row.code }}</span>
+                    <span style="flex:1;font-size:12.5px;color:#3a322c">{{ row.name }}</span>
+                    <span style="flex:0 0 auto;font-size:10px;color:#7a6a5c;background:#f1e7db;padding:2px 6px;border-radius:999px">{{ row.credit }} cr</span>
+                    <select value="{{ row.value }}" onChange="{{ row.onChange }}" style="flex:0 0 auto;width:88px;font-size:12px;border:1px solid #ddcfba;border-radius:6px;padding:3px 5px;background:#fff;color:#2b2420">
+                      <option value="">—</option>
+                      <optgroup label="Grade">
+                        <sc-for list="{{ row.realGrades }}" as="g" hint-placeholder-count="3"><option value="{{ g.grade }}">{{ g.label }}</option></sc-for>
+                      </optgroup>
+                      <sc-if value="{{ row.hasPlanning }}">
+                        <optgroup label="Planned">
+                          <sc-for list="{{ row.planningGrades }}" as="g" hint-placeholder-count="2"><option value="{{ g.grade }}">{{ g.label }}</option></sc-for>
+                        </optgroup>
+                      </sc-if>
+                    </select>
+                  </div>
+                </sc-if>
+              </sc-if>
+            </sc-for>
+          </div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <p class="dv-next">Try next: "make <a href="#1a">1a</a> the final direction" · "combine the roadmap stations from <a href="#1c">1c</a> with the side rail in <a href="#1b">1b</a>" · "more novel options"</p>
+</section>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+
+const COPPER_GRAD = 'linear-gradient(90deg,#e8a97a,#b3532f)';
+const SUCCESS = '#5f8a52';
+const PILL_ACTIVE = 'background:#2b2420;color:#fff';
+const PILL_ACTIVE_LIGHT = 'background:#fff;color:#2b2420;box-shadow:0 1px 3px rgba(0,0,0,.15)';
+const PILL_INACTIVE = 'background:transparent;color:#8a7d72';
+const PILL_INACTIVE_LIGHT = 'background:transparent;color:rgba(255,255,255,.75)';
+
+class Component extends DCLogic {
+  state = {
+    ready: false,
+    data: null,
+    planA: 'WIL', expandedA: { 1000: true, 1100: true, 1110: true },
+    planB: 'WIL', expandedB: { 1000: true, 1100: true, 1110: true },
+    planC: 'WIL', expandedC: { 2000: true, 2100: true },
+    selectedTopC: 2000,
+    planD: 'WIL', expandedD: { 1000: true, 1100: true }, selectedTopD: 1000,
+    enrollments: {},
+  };
+
+  async componentDidMount() {
+    const mod = await import('./data.js');
+    const seed = this.seedEnrollments();
+    this.setState({ data: mod, ready: true, enrollments: seed });
+  }
+
+  seedEnrollments() {
+    const picks = [
+      ['001101', 'A'], ['001102', 'B+'], ['001201', 'B'],
+      ['011151', 'A'], ['140104', 'B+'], ['204100', 'A'],
+      ['208262', 'B'], ['954140', 'A'], ['954142', 'B+'], ['954143', 'A'],
+      ['954100', 'B'], ['954170', 'B+'],
+      ['954310', 'xB+'], ['954340', 'xA'],
+    ];
+    const out = {};
+    for (const [code, grade] of picks) out[code] = { grade, term: '1/1' };
+    return out;
+  }
+
+  toggle(expKey, code) {
+    this.setState((s) => ({ [expKey]: { ...s[expKey], [code]: !s[expKey][code] } }));
+  }
+
+  setGrade(code, grade) {
+    this.setState((s) => {
+      const next = { ...s.enrollments };
+      if (!grade) delete next[code];
+      else next[code] = { grade, term: next[code]?.term || '1/1' };
+      return { enrollments: next };
+    });
+  }
+
+  // Flatten the category tree into display rows. If onlyTop is set, only that
+  // top-level group's subtree is included (used by the roadmap variant).
+  buildRows(expKey, plan, onlyTop) {
+    const { data, enrollments } = this.state;
+    if (!data) return [];
+    const { topGroups, childrenOf, subjectsForGroup, creditsEarned, requiredFor, GRADES } = data;
+    const expanded = this.state[expKey];
+    const rows = [];
+
+    const walk = (group, depth, parentVisible) => {
+      const kids = childrenOf(group.code);
+      const isLeaf = kids.length === 0;
+      const req = requiredFor(group.code, plan);
+      const earned = creditsEarned(group.code, enrollments);
+      const met = req > 0 ? earned >= req : earned > 0;
+      const pct = req > 0 ? Math.min(100, (earned / req) * 100) : earned > 0 ? 100 : 0;
+      const isExpanded = !!expanded[group.code];
+      rows.push({
+        isGroup: true, isSubject: false, visible: parentVisible,
+        code: group.code, name: group.name, req, earned, met,
+        pctPercent: Math.round(pct), barFill: met ? SUCCESS : COPPER_GRAD,
+        chevronRot: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
+        indent: (depth * 18 + 4) + 'px',
+        onToggle: () => this.toggle(expKey, group.code),
+      });
+      if (isLeaf) {
+        if (isExpanded) {
+          for (const s of subjectsForGroup(group.code)) {
+            const enr = enrollments[s.code];
+            const valid = GRADES.filter((g) => s.gradeType == null || g.type == null || g.type === s.gradeType);
+            const real = valid.filter((g) => !g.isPlanning).map((g) => ({ grade: g.grade, label: g.point != null ? `${g.grade} (${g.point})` : g.grade }));
+            const planning = valid.filter((g) => g.isPlanning).map((g) => ({ grade: g.grade, label: g.point != null ? `${g.grade} (${g.point})` : g.grade }));
+            rows.push({
+              isGroup: false, isSubject: true, visible: parentVisible && isExpanded,
+              code: s.code, name: s.name, credit: s.credit,
+              value: enr ? enr.grade : '',
+              indent: (depth * 18 + 26) + 'px',
+              realGrades: real, planningGrades: planning, hasPlanning: planning.length > 0,
+              onChange: (e) => this.setGrade(s.code, e.target.value),
+            });
+          }
+        }
+      } else {
+        for (const child of kids) walk(child, depth + 1, parentVisible && isExpanded);
+      }
+    };
+
+    for (const g of topGroups()) {
+      if (onlyTop != null && g.code !== onlyTop) continue;
+      walk(g, 0, true);
+    }
+    return rows;
+  }
+
+  gpaBundle() {
+    const { data, enrollments } = this.state;
+    const actual = data.gpaFor(enrollments, { includePlanning: false });
+    const proj = data.gpaFor(enrollments, { includePlanning: true });
+    return {
+      gpaActualLabel: actual.gpa == null ? '—' : actual.gpa.toFixed(2),
+      gpaProjLabel: proj.gpa == null ? '—' : proj.gpa.toFixed(2),
+      creditsActual: actual.credits,
+      creditsProj: proj.credits,
+    };
+  }
+
+  overallTotals(plan) {
+    const { data, enrollments } = this.state;
+    let req = 0, earned = 0;
+    for (const g of data.topGroups()) {
+      req += data.requiredFor(g.code, plan);
+      earned += data.creditsEarned(g.code, enrollments);
+    }
+    return { req, earned, pct: req > 0 ? Math.min(100, (earned / req) * 100) : 0 };
+  }
+
+  pillStyles(plan, light) {
+    const activeStyle = light ? PILL_ACTIVE_LIGHT : PILL_ACTIVE;
+    const inactiveStyle = light ? PILL_INACTIVE_LIGHT : PILL_INACTIVE;
+    return {
+      wilPillStyle: plan === 'WIL' ? activeStyle : inactiveStyle,
+      isPillStyle: plan === 'IS' ? activeStyle : inactiveStyle,
+    };
+  }
+
+  renderVals() {
+    const { ready, data, planA, planB, planC, selectedTopC, planD, selectedTopD } = this.state;
+    if (!ready) return { ready: false };
+
+    const gpa = this.gpaBundle();
+
+    // --- Option A: refined & tabbed ---
+    const a = {
+      ...gpa,
+      ...this.pillStyles(planA, false),
+      setWil: () => this.setState({ planA: 'WIL' }),
+      setIs: () => this.setState({ planA: 'IS' }),
+      rows: this.buildRows('expandedA', planA, null),
+    };
+
+    // --- Option B: progress-first ---
+    const totalsB = this.overallTotals(planB);
+    const remaining = Math.max(0, totalsB.req - totalsB.earned);
+    const railGroups = data.topGroups().map((g) => {
+      const earned = data.creditsEarned(g.code, this.state.enrollments);
+      const req = data.requiredFor(g.code, planB);
+      const met = req > 0 ? earned >= req : earned > 0;
+      return {
+        name: g.name,
+        pctText: req > 0 ? Math.round((earned / req) * 100) + '%' : '—',
+        dotColor: met ? SUCCESS : '#b3532f',
+        bg: 'transparent',
+        onClick: () => this.setState((s) => ({ expandedB: { ...s.expandedB, [g.code]: !s.expandedB[g.code] } })),
+      };
+    });
+    const b = {
+      ...gpa,
+      ...this.pillStyles(planB, true),
+      setWil: () => this.setState({ planB: 'WIL' }),
+      setIs: () => this.setState({ planB: 'IS' }),
+      overallPctPercent: Math.round(totalsB.pct),
+      encourageHeadline: `${totalsB.earned} of ${totalsB.req} credits done`,
+      encourageSub: remaining === 0 ? "You've met every category — nice work!" : `${remaining} credits to go. Keep going!`,
+      railItems: railGroups,
+      rows: this.buildRows('expandedB', planB, null),
+    };
+
+    // --- Option C: roadmap ---
+    const topGroupsC = data.topGroups();
+    const stations = topGroupsC.map((g, i) => {
+      const earned = data.creditsEarned(g.code, this.state.enrollments);
+      const req = data.requiredFor(g.code, planC);
+      const pct = req > 0 ? Math.min(100, (earned / req) * 100) : 0;
+      const met = req > 0 ? earned >= req : earned > 0;
+      const isSelected = g.code === selectedTopC;
+      return {
+        name: g.name,
+        pctText: met ? '✓' : Math.round(pct) + '%',
+        ringBg: `conic-gradient(${met ? SUCCESS : '#b3532f'} ${pct * 3.6}deg, #e9dcc9 0deg)`,
+        ringShadow: isSelected ? '0 0 0 3px #2b2420' : 'none',
+        flexGrow: i === topGroupsC.length - 1 ? '0 0 auto' : '1',
+        hasConnector: i < topGroupsC.length - 1,
+        connectorFill: '#e9dcc9',
+        onClick: () => this.setState({ selectedTopC: g.code }),
+      };
+    });
+    const selectedGroup = data.GROUPS.find((g) => g.code === selectedTopC);
+    const c = {
+      ...gpa,
+      ...this.pillStyles(planC, false),
+      setWil: () => this.setState({ planC: 'WIL' }),
+      setIs: () => this.setState({ planC: 'IS' }),
+      stations,
+      selectedTopName: selectedGroup ? selectedGroup.name : '',
+      rows: this.buildRows('expandedC', planC, selectedTopC),
+    };
+
+    // --- Option D (2a): roadmap scores + 1b category browser ---
+    const topGroupsD = data.topGroups();
+    const stationsD = topGroupsD.map((g, i) => {
+      const earned = data.creditsEarned(g.code, this.state.enrollments);
+      const req = data.requiredFor(g.code, planD);
+      const pct = req > 0 ? Math.min(100, (earned / req) * 100) : 0;
+      const met = req > 0 ? earned >= req : earned > 0;
+      const isSelected = g.code === selectedTopD;
+      return {
+        name: g.name,
+        pctText: met ? '✓' : Math.round(pct) + '%',
+        creditText: earned + '/' + req + ' cr',
+        ringBg: `conic-gradient(${met ? SUCCESS : '#b3532f'} ${pct * 3.6}deg, #e9dcc9 0deg)`,
+        ringShadow: isSelected ? '0 0 0 3px #2b2420' : 'none',
+        flexGrow: i === topGroupsD.length - 1 ? '0 0 auto' : '1',
+        hasConnector: i < topGroupsD.length - 1,
+        connectorFill: '#e9dcc9',
+        onClick: () => this.setState({ selectedTopD: g.code }),
+      };
+    });
+    const selectedGroupD = data.GROUPS.find((g) => g.code === selectedTopD);
+    const railItems = data.childrenOf(selectedTopD).map((g) => {
+      const earned = data.creditsEarned(g.code, this.state.enrollments);
+      const req = data.requiredFor(g.code, planD);
+      const met = req > 0 ? earned >= req : earned > 0;
+      return {
+        name: g.name,
+        pctText: req > 0 ? Math.round((earned / req) * 100) + '%' : '—',
+        dotColor: met ? SUCCESS : '#b3532f',
+        bg: 'transparent',
+        onClick: () => this.setState((s) => ({ expandedD: { ...s.expandedD, [g.code]: !s.expandedD[g.code] } })),
+      };
+    });
+    const d = {
+      ...gpa,
+      ...this.pillStyles(planD, false),
+      setWil: () => this.setState({ planD: 'WIL' }),
+      setIs: () => this.setState({ planD: 'IS' }),
+      stations: stationsD,
+      railItems,
+      selectedTopName: selectedGroupD ? selectedGroupD.name : '',
+      rows: this.buildRows('expandedD', planD, selectedTopD),
+    };
+
+    return { ready: true, a, b, c, d };
+  }
+}
+
+</script>
+</body>
+</html>

@@ -1,17 +1,30 @@
 // client/src/App.jsx
-// The whole dashboard: category tree with progress bars, per-subject grade
-// dropdowns, and a live GPA panel. The presentational pieces now come from the
-// @camt/ui design system; this file keeps only the app-specific data wiring and
-// the two thin domain wrappers (GpaPanel, GradeSelect) that adapt library
-// components to grade-calculator data.
+// The dashboard, redesigned: a progress-first layout — three "graduation score"
+// rings across the top (one per top-level requirement pillar), a GPA strip, and
+// a two-pane category browser (left quick-nav rail + right collapsible subject
+// tree). Presentational pieces come from the @camt/ui design system; this file
+// holds the app-specific data wiring and the flattened-tree builder.
+//
+// All data comes from the real /api backend (see api.js). The per-category
+// earned/required/met numbers come straight from GET /api/progress — we don't
+// recompute credit rollups on the client.
 
 import { useEffect, useMemo, useState } from 'react';
-import { Card, ProgressBar, StatCard, Select, Badge, Banner } from '@camt/ui';
+import {
+  Card,
+  ScoreRing,
+  SegmentedToggle,
+  ProgressBar,
+  Select,
+  Badge,
+  Banner,
+} from '@camt/ui';
 import { api } from './api';
+import TranscriptImport from './TranscriptImport';
 
-// Terms offered for NEW entries (the program runs ~4 years x 3 terms).
-const TERMS = [];
-for (let y = 1; y <= 4; y++) for (let s = 1; s <= 3; s++) TERMS.push(`${y}/${s}`);
+// New enrollments default to this term (the redesign dropped the term picker;
+// term still gets recorded, it just isn't chosen in the UI).
+const DEFAULT_TERM = '1/1';
 
 // Which grades are valid to record for a subject, mirroring the backend rule:
 // a subject with grade_type NULL accepts anything; a grade whose own type is
@@ -22,40 +35,11 @@ function validGrades(subject, grades) {
   );
 }
 
-// Depth of a group in the tree, for indentation.
-function depthOf(group, byCode) {
-  let d = 0;
-  let p = group.parent_code;
-  while (p != null) {
-    d += 1;
-    const parent = byCode.get(p);
-    p = parent ? parent.parent_code : null;
-  }
-  return d;
-}
-
-// --- Domain wrappers around design-system components ---
-
-// The GPA summary: two StatCards, the projected one visually accented.
-function GpaPanel({ gpa }) {
-  const fmt = (v) => (v == null ? '—' : v.toFixed(2));
-  return (
-    <div className="gpa-panel">
-      <StatCard value={fmt(gpa.gpa_actual)} label="GPA (actual)" sub={`${gpa.credits_actual} cr`} />
-      <StatCard
-        value={fmt(gpa.gpa_projected)}
-        label="GPA (projected)"
-        sub={`${gpa.credits_projected} cr`}
-        tone="accent"
-      />
-    </div>
-  );
-}
-
-// A grade dropdown built on the design system's <Select>, with the domain logic
-// for splitting real grades from planning (what-if) grades into optgroups.
+// The grade dropdown: real grades and planning (what-if) grades in two optgroups,
+// built on the design system's <Select>.
 function GradeSelect({ subject, grades, value, disabled, onChange }) {
   const valid = validGrades(subject, grades);
+  const label = (g) => (g.point != null ? `${g.grade} (${g.point})` : g.grade);
   const real = valid.filter((g) => !g.is_planning);
   const planning = valid.filter((g) => g.is_planning);
   return (
@@ -69,8 +53,7 @@ function GradeSelect({ subject, grades, value, disabled, onChange }) {
       <optgroup label="Grade">
         {real.map((g) => (
           <option key={g.grade} value={g.grade}>
-            {g.grade}
-            {g.point != null ? ` (${g.point})` : ''}
+            {label(g)}
           </option>
         ))}
       </optgroup>
@@ -78,8 +61,7 @@ function GradeSelect({ subject, grades, value, disabled, onChange }) {
         <optgroup label="Planned (what-if)">
           {planning.map((g) => (
             <option key={g.grade} value={g.grade}>
-              {g.grade}
-              {g.point != null ? ` (${g.point})` : ''}
+              {label(g)}
             </option>
           ))}
         </optgroup>
@@ -88,43 +70,54 @@ function GradeSelect({ subject, grades, value, disabled, onChange }) {
   );
 }
 
-// --- Main component ---
-
 export default function App() {
   const [plan, setPlan] = useState(() => localStorage.getItem('plan') || 'WIL');
-  const [activeTerm, setActiveTerm] = useState(() => localStorage.getItem('activeTerm') || '1/1');
 
   const [groups, setGroups] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [grades, setGrades] = useState([]);
-  const [progress, setProgress] = useState([]); // array of {code, earned, required, met, ...}
+  const [progress, setProgress] = useState([]); // [{code, earned, required, met, remaining}]
   const [gpa, setGpa] = useState({});
-  const [enrollments, setEnrollments] = useState({}); // subject_code -> enrollment
+  const [enrollments, setEnrollments] = useState({}); // subject_code -> {grade, term}
+
+  // Pure UI state (no API): which pillar is focused, and which categories are open.
+  const [selectedTop, setSelectedTop] = useState(null);
+  const [expanded, setExpanded] = useState({});
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(null); // subject_code currently saving
   const [error, setError] = useState(null);
 
-  // Re-fetch the student-specific data (depends on plan for progress).
+  // Re-fetch the student-specific data (progress depends on plan).
   async function refreshStudent(p) {
     const [prog, g, enr] = await Promise.all([api.progress(p), api.gpa(), api.enrollments()]);
     setProgress(prog.groups);
     setGpa(g);
-    // Turn the enrollments array into a { subject_code: enrollment } lookup.
     const map = {};
     for (const e of enr.enrollments) map[e.subject_code] = e;
     setEnrollments(map);
   }
 
-  // One-time bootstrap: establish the cookie, load the catalog, then the data.
+  // One-time bootstrap: cookie -> catalog -> pick a starting pillar -> data.
   useEffect(() => {
     (async () => {
       try {
-        await api.session(); // sets the student_id cookie exactly once
+        await api.session();
         const [gr, su, gd] = await Promise.all([api.groups(), api.subjects(), api.grades()]);
         setGroups(gr);
         setSubjects(su);
         setGrades(gd);
+        // Focus the first top-level pillar and open it + its first child.
+        const tops = gr.filter((g) => g.parent_code == null);
+        const first = tops[0];
+        const firstChild = first ? gr.find((g) => g.parent_code === first.code) : null;
+        if (first) {
+          setSelectedTop(first.code);
+          setExpanded({
+            [first.code]: true,
+            ...(firstChild ? { [firstChild.code]: true } : {}),
+          });
+        }
         await refreshStudent(plan);
       } catch (e) {
         setError(e.message);
@@ -135,12 +128,18 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Lookups derived from the loaded data.
-  const byCode = useMemo(() => new Map(groups.map((g) => [g.code, g])), [groups]);
-  const progressByCode = useMemo(
-    () => new Map(progress.map((p) => [p.code, p])),
-    [progress]
-  );
+  // --- Derived lookups ---
+  const progressByCode = useMemo(() => new Map(progress.map((p) => [p.code, p])), [progress]);
+  const topGroups = useMemo(() => groups.filter((g) => g.parent_code == null), [groups]);
+  const childrenOf = useMemo(() => {
+    const m = new Map();
+    for (const g of groups) {
+      if (g.parent_code == null) continue;
+      if (!m.has(g.parent_code)) m.set(g.parent_code, []);
+      m.get(g.parent_code).push(g);
+    }
+    return m;
+  }, [groups]);
   const subjectsByGroup = useMemo(() => {
     const m = new Map();
     for (const s of subjects) {
@@ -150,6 +149,14 @@ export default function App() {
     }
     return m;
   }, [subjects]);
+
+  const progOf = (code) => progressByCode.get(code) || { earned: 0, required: 0, met: false };
+  const pctOf = (earned, required) =>
+    required > 0 ? Math.min(100, (earned / required) * 100) : earned > 0 ? 100 : 0;
+
+  function toggle(code) {
+    setExpanded((e) => ({ ...e, [code]: !e[code] }));
+  }
 
   async function changePlan(p) {
     setPlan(p);
@@ -162,9 +169,13 @@ export default function App() {
     }
   }
 
-  function changeTerm(t) {
-    setActiveTerm(t);
-    localStorage.setItem('activeTerm', t);
+  async function handleImported() {
+    setError(null);
+    try {
+      await refreshStudent(plan);
+    } catch (e) {
+      setError(e.message);
+    }
   }
 
   async function onGradeChange(subject, newGrade) {
@@ -175,9 +186,7 @@ export default function App() {
       if (!newGrade) {
         if (existing) await api.deleteEnrollment(subject.code);
       } else {
-        // Keep the existing term when editing a grade; use the active term for
-        // a brand-new entry.
-        const term = existing ? existing.term : activeTerm;
+        const term = existing ? existing.term : DEFAULT_TERM;
         await api.saveEnrollment({ subject_code: subject.code, term, grade: newGrade });
       }
       await refreshStudent(plan);
@@ -188,79 +197,227 @@ export default function App() {
     }
   }
 
-  if (loading) return <div className="app"><p className="muted">Loading…</p></div>;
+  // Flatten the focused pillar's subtree into indented rows. A group with no
+  // child groups is a leaf and shows its subjects (when expanded); a group with
+  // child groups reveals those children (when expanded). Matches the prototype.
+  const rows = useMemo(() => {
+    if (selectedTop == null) return [];
+    const out = [];
+    const walk = (group, depth, parentVisible) => {
+      const kids = childrenOf.get(group.code) || [];
+      const isLeaf = kids.length === 0;
+      const { earned, required, met } = progOf(group.code);
+      const isOpen = !!expanded[group.code];
+      out.push({
+        kind: 'group',
+        visible: parentVisible,
+        code: group.code,
+        name: group.name,
+        earned,
+        required,
+        met,
+        isOpen,
+        indent: depth * 18 + 4,
+      });
+      if (isLeaf) {
+        if (isOpen) {
+          for (const s of subjectsByGroup.get(group.code) || []) {
+            out.push({
+              kind: 'subject',
+              visible: parentVisible && isOpen,
+              subject: s,
+              indent: depth * 18 + 26,
+            });
+          }
+        }
+      } else {
+        for (const child of kids) walk(child, depth + 1, parentVisible && isOpen);
+      }
+    };
+    const top = groups.find((g) => g.code === selectedTop);
+    if (top) walk(top, 0, true);
+    return out;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTop, groups, childrenOf, subjectsByGroup, progressByCode, expanded]);
+
+  if (loading) return <div className="page"><p className="muted">Loading…</p></div>;
+
+  const fmt = (v) => (v == null ? '—' : v.toFixed(2));
+  const selectedTopName = groups.find((g) => g.code === selectedTop)?.name || '';
+  const railItems = childrenOf.get(selectedTop) || [];
 
   return (
-    <div className="app">
-      <Card as="header" className="topbar">
-        <h1>CAMT Grade Calculator</h1>
-        <div className="controls">
-          <label>
-            Plan{' '}
-            <Select value={plan} onChange={(e) => changePlan(e.target.value)}>
-              <option value="WIL">WIL (Work-Integrated Learning)</option>
-              <option value="IS">IS (Independent Study)</option>
-            </Select>
-          </label>
-          <label>
-            New-entry term{' '}
-            <Select value={activeTerm} onChange={(e) => changeTerm(e.target.value)}>
-              {TERMS.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </Select>
-          </label>
-        </div>
-        <GpaPanel gpa={gpa} />
-      </Card>
+    <div className="page">
+      <div className="shell">
+        <Card padded={false} className="app-card">
+          {/* Header: logo + wordmark + WIL/IS toggle */}
+          <div className="header">
+            <div className="brand">
+              <img src="/camt-logo.jpg" alt="CAMT" className="logo" />
+              <span className="wordmark">Grade Calculator</span>
+            </div>
+            <div className="header-actions">
+              <TranscriptImport onImported={handleImported} />
+              <SegmentedToggle
+                value={plan}
+                onChange={changePlan}
+                options={[
+                  { value: 'WIL', label: 'WIL' },
+                  { value: 'IS', label: 'IS' },
+                ]}
+              />
+            </div>
+          </div>
 
-      {error && (
-        <Banner tone="error" className="app-banner">
-          {error}
-        </Banner>
-      )}
-
-      <main>
-        {groups.map((group) => {
-          const depth = depthOf(group, byCode);
-          const prog = progressByCode.get(group.code) || { earned: 0, required: 0, met: false };
-          const groupSubjects = subjectsByGroup.get(group.code) || [];
-          return (
-            <section key={group.code} className="group" style={{ marginLeft: depth * 16 }}>
-              <div className="group-head">
-                <span className="group-name">{group.name}</span>
-                <ProgressBar
-                  className="bar-cell"
-                  value={prog.earned}
-                  max={prog.required}
-                  met={prog.met}
-                />
-              </div>
-
-              {groupSubjects.map((subject) => {
-                const enr = enrollments[subject.code];
-                return (
-                  <div key={subject.code} className="subject-row">
-                    <span className="subj-code">{subject.code}</span>
-                    <span className="subj-name">{subject.name}</span>
-                    <Badge className="subj-credit">{subject.credit} cr</Badge>
-                    <GradeSelect
-                      subject={subject}
-                      grades={grades}
-                      value={enr ? enr.grade : ''}
-                      disabled={saving === subject.code}
-                      onChange={(g) => onGradeChange(subject, g)}
+          {/* Score rings — one per top-level pillar, joined by connectors */}
+          <div className="rings">
+            {topGroups.map((g, i) => {
+              const { earned, required, met } = progOf(g.code);
+              const isLast = i === topGroups.length - 1;
+              return (
+                <div className="ring-cell" style={{ flex: isLast ? '0 0 auto' : 1 }} key={g.code}>
+                  <div className="ring-col" onClick={() => setSelectedTop(g.code)}>
+                    <ScoreRing
+                      percent={pctOf(earned, required)}
+                      met={met}
+                      selected={g.code === selectedTop}
+                      sublabel={`${earned}/${required} cr`}
                     />
-                    <span className="subj-term">{enr ? enr.term : ''}</span>
+                    <div className="ring-name">{g.name}</div>
+                  </div>
+                  {!isLast && <div className="connector" />}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* GPA strip */}
+          <div className="gpa-strip">
+            <div className="gpa-stats">
+              <div>
+                <div className="gpa-value">{fmt(gpa.gpa_actual)}</div>
+                <div className="gpa-cap">GPA actual · {gpa.credits_actual} cr</div>
+              </div>
+              <div>
+                <div className="gpa-value">{fmt(gpa.gpa_projected)}</div>
+                <div className="gpa-cap">GPA projected · {gpa.credits_projected} cr</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Pillar tabs — switch which top-level requirement is focused below.
+              (Clicking a ring above does the same thing.) */}
+          <div className="pillar-tabs">
+            {topGroups.map((g) => (
+              <button
+                key={g.code}
+                type="button"
+                className={`pillar-tab${g.code === selectedTop ? ' pillar-tab-active' : ''}`}
+                onClick={() => setSelectedTop(g.code)}
+              >
+                {g.name}
+              </button>
+            ))}
+          </div>
+
+          {/* Two-pane category browser */}
+          <div className="browser">
+            <div className="rail">
+              <div className="rail-eyebrow">{selectedTopName}</div>
+              {railItems.map((g) => {
+                const { earned, required, met } = progOf(g.code);
+                return (
+                  <div className="rail-row" key={g.code} onClick={() => toggle(g.code)}>
+                    <span className="rail-name">{g.name}</span>
+                    <span
+                      className="rail-pct"
+                      style={{ color: met ? 'var(--color-success)' : 'var(--color-copper)' }}
+                    >
+                      {required > 0 ? `${Math.round(pctOf(earned, required))}%` : '—'}
+                    </span>
                   </div>
                 );
               })}
-            </section>
-          );
-        })}
-      </main>
+            </div>
+
+            <div className="tree">
+              {rows.map((row, idx) => {
+                if (!row.visible) return null;
+                if (row.kind === 'group') {
+                  return (
+                    <div
+                      className="cat-row"
+                      key={`g-${row.code}`}
+                      onClick={() => toggle(row.code)}
+                      style={{ paddingLeft: row.indent }}
+                    >
+                      <span
+                        className="chevron"
+                        style={{ transform: row.isOpen ? 'rotate(90deg)' : 'rotate(0deg)' }}
+                      >
+                        ▶
+                      </span>
+                      <span className="cat-name">{row.name}</span>
+                      {row.required > 0 ? (
+                        // Fixed-requirement category: show the progress bar.
+                        <ProgressBar
+                          className="cat-bar"
+                          size="sm"
+                          tone="copper"
+                          showLabel={false}
+                          value={row.earned}
+                          max={row.required}
+                          met={row.met}
+                        />
+                      ) : (
+                        // "Pick any" category (no required count) — no bar, just
+                        // keep the row spaced so the credit count stays right-aligned.
+                        <span className="cat-bar-spacer" />
+                      )}
+                      <span className="cat-earned">
+                        {row.required > 0
+                          ? `${row.earned}/${row.required}`
+                          : row.earned > 0
+                            ? `${row.earned} cr`
+                            : '—'}
+                      </span>
+                    </div>
+                  );
+                }
+                const s = row.subject;
+                const enr = enrollments[s.code];
+                return (
+                  <div className="subj-row" key={`s-${s.code}-${idx}`} style={{ paddingLeft: row.indent }}>
+                    <span className="subj-code">{s.code}</span>
+                    <span className="subj-name">{s.name}</span>
+                    <Badge variant="pill" className="subj-chip">
+                      {s.credit} cr
+                    </Badge>
+                    <GradeSelect
+                      subject={s}
+                      grades={grades}
+                      value={enr ? enr.grade : ''}
+                      disabled={saving === s.code}
+                      onChange={(g) => onGradeChange(s, g)}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </Card>
+
+        {error && (
+          <Banner tone="error" className="app-banner">
+            {error}
+          </Banner>
+        )}
+
+        <div className="footer">
+          Grades save to this browser only · CAMT MMIT · College of Arts, Media and Technology,
+          Chiang Mai University
+        </div>
+      </div>
     </div>
   );
 }

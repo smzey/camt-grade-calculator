@@ -40,4 +40,8 @@ export const api = {
   saveEnrollment: (payload) => send('POST', '/enrollments', payload),
   deleteEnrollment: (subjectCode) =>
     send('DELETE', `/enrollments/${encodeURIComponent(subjectCode)}`),
+  // Transcript import: preview parses+matches (no writes); commit records the
+  // confirmed rows.
+  previewTranscript: (text) => send('POST', '/import/preview', { text }),
+  commitImport: (enrollments) => send('POST', '/import/commit', { enrollments }),
 };

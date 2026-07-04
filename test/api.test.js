@@ -342,6 +342,80 @@ describe('DELETE /enrollments/:subject_code', () => {
   });
 });
 
+describe('transcript import', () => {
+  // One semester: 3 catalog courses + 1 free elective (261112) not in catalog.
+  const TRANSCRIPT = [
+    'ภาคการศึกษา 1 / 2567',
+    'No\tCourse no\tCourse Title\tCredit\tGrade',
+    '1\t001101\tFundamental English 1\t3.00\tA',
+    '2\t954100\tInformation System for Organization Management\t3.00\tB+',
+    '3\t208262\tElementary Statistics\t3.00\tF',
+    '4\t261112\tGame Appreciation\t3.00\tA',
+  ].join('\n');
+
+  it('preview matches catalog courses, flags the unmatched one, computes GPA', async () => {
+    const res = await request(app)
+      .post('/api/import/preview')
+      .set('Cookie', asStudent('test-import'))
+      .send({ text: TRANSCRIPT });
+    assert.equal(res.status, 200);
+    assert.deepEqual(res.body.summary, { total: 4, ok: 3, skipped: 1 });
+    const unmatched = res.body.rows.find((r) => r.subject_code === '261112');
+    assert.equal(unmatched.status, 'unmatched_subject');
+    // Cross-check GPA over ALL 4 parsed courses (incl. the unmatched A):
+    // (4 + 3.5 + 0 + 4)*3 / 12 = 2.88 — matches what the transcript would show.
+    assert.equal(res.body.computed.gpa, 2.88);
+    assert.equal(res.body.computed.credits, 12);
+    // every ok row carries the inferred term 1/1 (year 2567 -> study year 1)
+    assert.ok(res.body.rows.filter((r) => r.status === 'ok').every((r) => r.term === '1/1'));
+  });
+
+  it('preview 422s when no course rows are found', async () => {
+    const res = await request(app)
+      .post('/api/import/preview')
+      .set('Cookie', asStudent('test-import'))
+      .send({ text: 'just some random text, no table here' });
+    assert.equal(res.status, 422);
+  });
+
+  it('commit records the confirmed rows and GPA then matches', async () => {
+    await db.query("DELETE FROM enrollments WHERE student_id = 'test-import2'");
+    const rows = [
+      { subject_code: '001101', term: '1/1', grade: 'A' },
+      { subject_code: '954100', term: '1/1', grade: 'B+' },
+      { subject_code: '208262', term: '1/1', grade: 'F' },
+    ];
+    const res = await request(app)
+      .post('/api/import/commit')
+      .set('Cookie', asStudent('test-import2'))
+      .send({ enrollments: rows });
+    assert.equal(res.status, 200);
+    assert.equal(res.body.imported, 3);
+
+    const gpa = await request(app).get('/api/gpa').set('Cookie', asStudent('test-import2'));
+    assert.equal(gpa.body.gpa_actual, 2.5);
+    assert.equal(gpa.body.credits_actual, 9);
+  });
+
+  it('commit rejects the whole batch if any row is invalid (nothing written)', async () => {
+    await db.query("DELETE FROM enrollments WHERE student_id = 'test-import3'");
+    const res = await request(app)
+      .post('/api/import/commit')
+      .set('Cookie', asStudent('test-import3'))
+      .send({
+        enrollments: [
+          { subject_code: '001101', term: '1/1', grade: 'A' },
+          { subject_code: '261112', term: '1/1', grade: 'A' }, // not in catalog
+        ],
+      });
+    assert.equal(res.status, 400);
+    assert.ok(res.body.problems.length >= 1);
+
+    const list = await request(app).get('/api/enrollments').set('Cookie', asStudent('test-import3'));
+    assert.equal(list.body.enrollments.length, 0); // transaction never ran
+  });
+});
+
 describe('data isolation between cookies', () => {
   it("one student's grades do not appear in another's GPA", async () => {
     await request(app)
