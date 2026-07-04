@@ -62,9 +62,10 @@ grades, 142 subjects): `sql/seed.sql` (written, not yet run — run this next).
   This is the "anonymous per-browser identity" — no login; data still in Postgres
   keyed by this id.
 - `src/routes/catalog.js` — `GET /groups`, `GET /subjects` (step 2).
-- `src/routes/enrollments.js` — `POST /enrollments` (step 3). Student comes from
-  the cookie (not the body). Validates: presence, subject/grade exist, not a
-  title row, and grade_type vs subject.grade_type. Then upserts.
+- `src/routes/enrollments.js` — `POST /enrollments` (step 3) + `GET /enrollments`
+  (list the student's grades, joined with subject/grade info, term-sorted
+  numerically). Student comes from the cookie (not the body). POST validates:
+  presence, subject/grade exist, not a title row, grade_type vs subject.grade_type.
 - `src/routes/gpa.js` — `GET /gpa` (step 4). Uses `req.studentId`. Returns
   gpa_actual (recorded only) AND gpa_projected (incl. planning x-grades).
 - `src/routes/progress.js` — `GET /progress?plan=WIL|IS` (step 5). Uses
@@ -101,6 +102,8 @@ Known open items / next candidates:
   on the cookie being sent automatically (fetch with `credentials: 'include'`).
 - Cookie is httpOnly + sameSite=lax; `secure` flips on when `NODE_ENV=production`.
   On the VPS (HTTPS) remember to run with `NODE_ENV=production`.
-- No `GET /enrollments` (list a student's recorded grades) — likely needed by a UI.
+- Frontend not built yet — the API is complete enough to back one now.
+- No `DELETE /enrollments/:subject_code` (remove a recorded grade) — a UI would
+  want it alongside the list view.
 - Tests hit the real dev DB; fine for now, but a dedicated test DB would isolate
   them from local data entirely.

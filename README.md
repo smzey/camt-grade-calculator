@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/camt-logo.jpg" alt="CAMT — College of Arts, Media and Technology, Chiang Mai University" width="480">
+</p>
+
 # CAMT Grade Calculator
 
 A Node.js + Express + PostgreSQL backend that replaces the fragile Excel-based
@@ -94,7 +98,7 @@ the app) from `server.js` (starts listening) is what makes this possible.
 
 ## Project layout
 
-```
+```text
 sql/
   schema.sql        # tables (applied)
   seed.sql          # catalog data from the original xlsx

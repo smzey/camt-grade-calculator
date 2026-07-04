@@ -98,4 +98,48 @@ router.post('/enrollments', async (req, res) => {
   }
 });
 
+// GET /enrollments — list the current student's recorded grades.
+// Joined with subjects + grades so the client gets everything it needs to render
+// a "my courses" table in one call (name, credit, GPA point, flags) instead of
+// looking each one up separately.
+router.get('/enrollments', async (req, res) => {
+  try {
+    const result = await db.query(
+      `SELECT
+         e.subject_code,
+         s.name       AS subject_name,
+         s.credit,
+         s.group_code,
+         e.term,
+         e.grade,
+         g.point,
+         g.is_keep,
+         g.is_planning
+       FROM enrollments e
+       JOIN subjects s ON s.code  = e.subject_code
+       JOIN grades   g ON g.grade = e.grade
+       WHERE e.student_id = $1
+       -- term is text like '1/1' or '10/3'. A plain text sort would order
+       -- '10/1' before '2/1' ('1' < '2' char-by-char). Split into year/sem and
+       -- cast to int so it sorts the way a human reads a transcript.
+       ORDER BY split_part(e.term, '/', 1)::int,
+                split_part(e.term, '/', 2)::int,
+                e.subject_code`,
+      [req.studentId]
+    );
+
+    // pg returns NUMERIC (point) as a string; convert to a real number (or keep
+    // null for non-GPA grades like S/W). credit is INTEGER -> already a number.
+    const enrollments = result.rows.map((r) => ({
+      ...r,
+      point: r.point === null ? null : Number(r.point),
+    }));
+
+    res.json({ student_id: req.studentId, enrollments });
+  } catch (err) {
+    console.error('GET /enrollments failed:', err);
+    res.status(500).json({ error: 'Failed to fetch enrollments' });
+  }
+});
+
 module.exports = router;

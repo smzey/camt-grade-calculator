@@ -242,6 +242,42 @@ describe('GET /progress', () => {
   });
 });
 
+describe('GET /enrollments', () => {
+  before(async () => {
+    await db.query("DELETE FROM enrollments WHERE student_id = 'test-list'");
+    const post = (body) =>
+      request(app).post('/enrollments').set('Cookie', asStudent('test-list')).send(body);
+    // Insert out of order, and mix a single-digit and double-digit year so the
+    // numeric-term sort is actually exercised.
+    await post({ subject_code: '001101', term: '10/1', grade: 'A' });
+    await post({ subject_code: '001102', term: '2/1', grade: 'B+' });
+    await post({ subject_code: '001201', term: '1/1', grade: 'A' });
+  });
+
+  it("returns the student's grades joined with subject + grade info", async () => {
+    const res = await request(app).get('/enrollments').set('Cookie', asStudent('test-list'));
+    assert.equal(res.status, 200);
+    assert.equal(res.body.enrollments.length, 3);
+    const first = res.body.enrollments[0];
+    // joined fields present
+    assert.ok(first.subject_name);
+    assert.equal(typeof first.credit, 'number');
+    assert.equal(typeof first.point, 'number'); // NUMERIC converted from string
+  });
+
+  it('orders terms numerically (1/1, 2/1, 10/1) not lexically', async () => {
+    const res = await request(app).get('/enrollments').set('Cookie', asStudent('test-list'));
+    const terms = res.body.enrollments.map((e) => e.term);
+    assert.deepEqual(terms, ['1/1', '2/1', '10/1']);
+  });
+
+  it('returns an empty list for a student with no grades', async () => {
+    const res = await request(app).get('/enrollments').set('Cookie', asStudent('test-none'));
+    assert.equal(res.status, 200);
+    assert.deepEqual(res.body.enrollments, []);
+  });
+});
+
 describe('data isolation between cookies', () => {
   it("one student's grades do not appear in another's GPA", async () => {
     await request(app)
