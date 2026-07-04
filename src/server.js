@@ -8,5 +8,5 @@ const app = require('./app');
 // Fall back to 3000 if PORT isn't set. `||` catches undefined/empty string.
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
-  console.log(`Server listening on http://localhost:${port}`);
+  console.log(`Server listening on port ${PORT}`);
 });
