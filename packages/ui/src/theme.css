@@ -1,0 +1,65 @@
+/* theme.css — the Tailwind v4 entry point AND the design system's token source.
+ *
+ * How Tailwind v4 works here (different from v3 — no tailwind.config.js):
+ *   - We import only Tailwind's `theme` and `utilities` layers, NOT `base`.
+ *     Skipping `base` means we don't ship Preflight (Tailwind's global CSS
+ *     reset) — a shared component library shouldn't reset its host app's page.
+ *   - The `@theme { ... }` block below defines design tokens. Each token is a
+ *     real CSS variable AND makes Tailwind generate matching utilities:
+ *       --color-surface  ->  bg-surface / text-surface / border-surface
+ *       --radius-xl      ->  rounded-xl
+ *       --shadow-sm      ->  shadow-sm
+ *     So there is ONE source of truth for both the CSS variables a consumer can
+ *     override and the class names our components use.
+ *   - `@source` tells Tailwind which files to scan for class names when tree-
+ *     shaking utilities into the built stylesheet. */
+
+@layer theme, base, components, utilities;
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+
+@source './**/*.{js,jsx}';
+
+@theme {
+  /* --- Font --- */
+  --font-sans: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+
+  /* --- Text colors --- */
+  --color-ink: #1f2937; /* primary body text -> text-ink */
+  --color-ink-strong: #374151; /* labels on tints  -> text-ink-strong */
+  --color-muted: #6b7280; /* secondary text   -> text-muted */
+  --color-subtle: #9ca3af; /* tertiary text    -> text-subtle */
+
+  /* --- Surface colors --- */
+  --color-bg: #f8fafc; /* page background       -> bg-bg */
+  --color-surface: #ffffff; /* cards / panels        -> bg-surface */
+  --color-surface-2: #f1f5f9; /* inset tiles           -> bg-surface-2 */
+  --color-surface-accent: #eef2ff; /* accent-tinted tile    -> bg-surface-accent */
+
+  /* --- Line colors --- */
+  --color-border: #e5e7eb; /* default borders / track -> border-border */
+  --color-border-strong: #d1d5db; /* form controls           -> border-border-strong */
+  --color-divider: #f1f5f9; /* subtle row dividers     -> border-divider */
+
+  /* --- Status colors --- */
+  --color-fill: #94a3b8; /* neutral progress fill */
+  --color-success: #22c55e; /* met / positive fill */
+  --color-danger-bg: #fef2f2;
+  --color-danger-border: #fecaca;
+  --color-danger-ink: #b91c1c;
+  --color-info-bg: #eef2ff;
+  --color-info-border: #c7d2fe;
+  --color-info-ink: #3730a3;
+  --color-ok-bg: #f0fdf4;
+  --color-ok-border: #bbf7d0;
+  --color-ok-ink: #15803d;
+
+  /* --- Radii (override Tailwind defaults to match the original UI) --- */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;
+
+  /* --- Elevation --- */
+  --shadow-sm: 0 1px 3px rgb(0 0 0 / 0.05);
+}

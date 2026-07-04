@@ -57,5 +57,27 @@ router.get('/subjects', async (req, res) => {
   }
 });
 
+// GET /grades — the grade -> point lookup. The UI needs this to populate the
+// grade dropdowns (and to know which grades are planning grades). Ordered so
+// real grades come before their x-prefixed planning twins, best grade first.
+router.get('/grades', async (req, res) => {
+  try {
+    const result = await db.query(
+      `SELECT grade, point, type, is_cal, is_keep, is_planning
+       FROM grades
+       ORDER BY is_planning, point DESC NULLS LAST, grade`
+    );
+    // point is NUMERIC -> string from pg; hand back a real number (or null).
+    const grades = result.rows.map((g) => ({
+      ...g,
+      point: g.point === null ? null : Number(g.point),
+    }));
+    res.json(grades);
+  } catch (err) {
+    console.error('GET /grades failed:', err);
+    res.status(500).json({ error: 'Failed to fetch grades' });
+  }
+});
+
 // Export the router so server.js can mount it.
 module.exports = router;

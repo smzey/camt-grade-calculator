@@ -46,22 +46,28 @@ Full schema: `sql/schema.sql` (already run against local Postgres, db name
 `grade_calculator`). Seed data extracted from the actual xlsx (19 groups, 23
 grades, 142 subjects): `sql/seed.sql` (written, not yet run — run this next).
 
+IMPORTANT: all API routes are now under **`/api`** (e.g. `GET /api/groups`). Express
+serves the built React app (`client/dist`) for every non-`/api` path.
+
 ## Status / file inventory
 - `package.json` — deps: express, pg, dotenv, cookie-parser. devDeps: nodemon,
-  supertest. Scripts: `npm run dev` (nodemon), `npm start`, `npm test` (node --test).
+  supertest. Scripts: `npm run dev` (backend nodemon), `npm start`, `npm test`
+  (node --test), `npm run client` (Vite dev server), `npm run build` (build client).
 - `.env` — `DATABASE_URL`, `PORT=3000`. (gitignored — don't commit)
 - `sql/schema.sql` — applied (19 groups, 23 grades, 142 subjects).
 - `sql/seed.sql` — applied.
 - `src/db.js` — pg Pool wrapper (`db.query(text, params)`), exports `pool` too.
-- `src/app.js` — builds + EXPORTS the Express app (middleware: json, cookieParser,
-  attachStudent; `GET /health`; mounts all routers). No `.listen` here — that's
-  what makes it testable.
+- `src/app.js` — builds + EXPORTS the Express app. Global middleware json +
+  cookieParser; an `/api` router (attachStudent, `/health`, `/session`, all
+  feature routers); a JSON 404 for unknown `/api/*`; then static serving of
+  `client/dist` + SPA fallback to index.html. No `.listen` — that's server.js.
 - `src/server.js` — thin entry point: `require('./app')` then `app.listen(PORT)`.
-- `src/middleware/student.js` — `attachStudent`: reads the `student_id` cookie
-  (mints a random `u_<uuid>` + Set-Cookie if absent), sets `req.studentId`.
-  This is the "anonymous per-browser identity" — no login; data still in Postgres
-  keyed by this id.
-- `src/routes/catalog.js` — `GET /groups`, `GET /subjects` (step 2).
+- `src/middleware/student.js` — `attachStudent` (mounted on the /api router only):
+  reads the `student_id` cookie (mints a random `u_<uuid>` + Set-Cookie if absent),
+  sets `req.studentId`. Anonymous per-browser identity — no login; data in Postgres
+  keyed by this id. `GET /api/session` lets the client establish the cookie once
+  on startup before firing parallel loads (avoids an id race).
+- `src/routes/catalog.js` — `GET /groups`, `GET /subjects`, `GET /grades`.
 - `src/routes/enrollments.js` — full enrollments resource, all cookie-scoped:
   `POST /enrollments` (upsert; validates presence, subject/grade exist, not a title
   row, grade_type vs subject.grade_type), `GET /enrollments` (list, joined with
@@ -72,8 +78,18 @@ grades, 142 subjects): `sql/seed.sql` (written, not yet run — run this next).
 - `src/routes/progress.js` — `GET /progress?plan=WIL|IS` (step 5). Uses
   `req.studentId`. Recursive CTE rolls each group's passed (is_keep) credits up
   its subtree; compares to req_wil/req_is; returns {required, earned, met, remaining}.
-- `test/api.test.js` — 21 supertest integration tests over the real seeded DB;
+- `test/api.test.js` — 30 supertest integration tests over the real seeded DB;
   acts as `test-*` students (via Cookie header) and cleans them up. `npm test`.
+- `client/` — Vite + React SPA (its own package.json). `client/src/api.js` wraps
+  the /api endpoints (fetch, credentials:'include'); `client/src/App.jsx` is the
+  dashboard (plan toggle, category tree with progress bars, per-subject grade
+  dropdowns, live GPA panel). `vite.config.js` proxies /api -> :3000 in dev.
+  `npm run build` emits `client/dist`, which Express serves in production.
+
+## Dev workflow
+Two processes in dev: `npm run dev` (backend :3000) + `npm run client` (Vite
+:5173, open THIS in the browser — it hot-reloads and proxies /api to :3000).
+For a prod-like single-origin run: `npm run build` then `npm start`, open :3000.
 
 ## Remaining roadmap
 1. **Express server + DB connection** (`src/db.js` — `pg` Pool using
@@ -91,18 +107,20 @@ grades, 142 subjects): `sql/seed.sql` (written, not yet run — run this next).
 
 All roadmap steps #1–#6 done and verified. Since then also added:
 - **grade_type + title-row validation** on `POST /enrollments` (DONE).
-- **Cookie-based anonymous identity** — `student_id` now comes from a per-browser
+- **Cookie-based anonymous identity** — `student_id` comes from a per-browser
   cookie, not a hardcoded 'me'. No login; data stays in Postgres keyed by the
-  cookie id. This was a deliberate product choice: "save user data per-browser,
-  not behind an online account."
-- **Automated test suite** — `npm test`, 21 supertest integration tests (DONE).
+  cookie id. Deliberate product choice: "save user data per-browser, not online."
+- **Automated test suite** — `npm test`, 30 supertest integration tests (DONE).
+- **React frontend** — Vite SPA dashboard served same-origin under Express;
+  API moved under `/api`. Verified end-to-end (build + client-style flow). (DONE)
 
 Known open items / next candidates:
 
-- No frontend yet — API only. A browser UI would consume these endpoints and rely
-  on the cookie being sent automatically (fetch with `credentials: 'include'`).
-- Cookie is httpOnly + sameSite=lax; `secure` flips on when `NODE_ENV=production`.
-  On the VPS (HTTPS) remember to run with `NODE_ENV=production`.
-- Frontend not built yet — the enrollments API is now full CRUD, ready to back a UI.
-- Tests hit the real dev DB; fine for now, but a dedicated test DB would isolate
-  them from local data entirely.
+- Frontend is a FIRST version — not yet visually verified in a real browser by
+  a human; worth a look to catch layout issues. Logic/endpoints are verified.
+- Per-subject term: new entries use a single "active term" selector; there's no
+  per-row term editor yet. Fine for v1; revisit if term accuracy matters.
+- `NODE_ENV=production` on the VPS flips the cookie `secure` flag on (HTTPS) and
+  is when Express serves `client/dist`. Remember `npm run build` in deploy.
+- Tests hit the real dev DB; a dedicated test DB would isolate them fully.
+- No user-facing way to see a flat transcript / clear-all; only the tree view.

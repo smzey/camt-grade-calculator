@@ -1,6 +1,9 @@
 # Dependencies
 node_modules/
 
+# Build output (rebuilt from source; not committed)
+dist/
+
 # Environment / secrets
 .env
 .env.*
