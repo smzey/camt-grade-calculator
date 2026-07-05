@@ -1,0 +1,76 @@
+# Build the static React app and deploy it to GitHub Pages.
+#
+# The app is now 100% static (no server, no database) — data lives in each
+# visitor's browser (localStorage). So "deploy" is just: build client/dist and
+# publish it to Pages. $0 to host, and it scales like any CDN.
+#
+# BASE PATH: this is configured for a GitHub *project* page served from
+#   https://<user>.github.io/camt-grade-calculator/
+# hence `--base=/camt-grade-calculator/`. If you move to a custom domain or a
+# user/org page served from the domain root, change VITE_BASE to '/'.
+
+name: Deploy static site to GitHub Pages
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+env:
+  VITE_BASE: /camt-grade-calculator/
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # @camt/ui is a local package (file:../packages/ui) whose built dist/ is
+      # gitignored, so build it first — the client imports from that dist.
+      - name: Build @camt/ui design system
+        working-directory: packages/ui
+        run: |
+          npm ci
+          npm run build
+
+      # Build the client. `-- --base=...` forwards the base path to `vite build`
+      # so all asset URLs are prefixed for the project-page subpath.
+      - name: Build client
+        working-directory: client
+        run: |
+          npm ci
+          npm run build -- --base=${{ env.VITE_BASE }}
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: client/dist
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

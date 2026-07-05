@@ -1,47 +1,73 @@
 // client/src/api.js
-// Thin wrappers around the backend endpoints. Every call goes to /api/... which
-// Vite proxies to the Express server in dev, and Express serves directly in prod.
+// Same interface the components already use — but there is no backend anymore.
+// Every call is answered locally: catalog from the bundled JSON, calculations
+// from ./engine, and the student's grades from ./store (localStorage). Keeping
+// the method names/shapes identical meant App.jsx and TranscriptImport.jsx didn't
+// have to change when we dropped the server.
 //
-// credentials: 'include' makes the browser send/receive the student_id cookie.
-// (Same-origin it would anyway, but being explicit keeps it correct if the
-// origins ever diverge.)
+// The methods stay `async` so callers' `await`/try-catch keep working unchanged;
+// they just resolve instantly instead of doing a round-trip.
 
-const BASE = '/api';
-
-// Shared response handler: throw a useful Error on non-2xx so callers can catch.
-async function handle(res) {
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    const msg = body.error || (body.errors && body.errors.join(', ')) || `HTTP ${res.status}`;
-    throw new Error(msg);
-  }
-  // DELETE/empty bodies: guard against no JSON.
-  return res.status === 204 ? null : res.json();
-}
-
-const get = (path) => fetch(BASE + path, { credentials: 'include' }).then(handle);
-
-const send = (method, path, body) =>
-  fetch(BASE + path, {
-    method,
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
-    body: body === undefined ? undefined : JSON.stringify(body),
-  }).then(handle);
+import * as catalog from './catalog';
+import * as store from './store';
+import { computeGpa, computeProgress, buildPreview } from './engine';
+import { parseTranscript } from './transcriptParser';
 
 export const api = {
-  session: () => get('/session'),
-  groups: () => get('/groups'),
-  subjects: () => get('/subjects'),
-  grades: () => get('/grades'),
-  enrollments: () => get('/enrollments'),
-  gpa: () => get('/gpa'),
-  progress: (plan) => get(`/progress?plan=${encodeURIComponent(plan)}`),
-  saveEnrollment: (payload) => send('POST', '/enrollments', payload),
-  deleteEnrollment: (subjectCode) =>
-    send('DELETE', `/enrollments/${encodeURIComponent(subjectCode)}`),
-  // Transcript import: preview parses+matches (no writes); commit records the
-  // confirmed rows.
-  previewTranscript: (text) => send('POST', '/import/preview', { text }),
-  commitImport: (enrollments) => send('POST', '/import/commit', { enrollments }),
+  // Used to exist to establish the cookie before parallel loads; now a no-op.
+  session: async () => ({ student_id: 'local' }),
+
+  // --- Catalog (was GET /groups, /subjects, /grades) ---
+  groups: async () => catalog.groups,
+  subjects: async () => catalog.subjects,
+  grades: async () => catalog.grades,
+
+  // --- Student data (was the cookie-scoped enrollment/GPA/progress endpoints) ---
+  enrollments: async () => ({ enrollments: store.listEnrollments() }),
+  gpa: async () => computeGpa(store.allEnrollments()),
+  progress: async (plan) => {
+    const p = (plan || 'WIL').toUpperCase();
+    if (p !== 'WIL' && p !== 'IS') throw new Error("plan must be 'WIL' or 'IS'");
+    return { plan: p, groups: computeProgress(store.allEnrollments(), p) };
+  },
+
+  // Record/replace one grade. Validate with the same rule the server used, so an
+  // invalid combination surfaces the same error message in the UI banner.
+  saveEnrollment: async ({ subject_code, term, grade }) => {
+    if (!subject_code || !term || !grade) throw new Error('subject_code, term and grade are required');
+    const { status, message } = catalog.classifyRow({ subject_code, grade });
+    if (status !== 'ok') throw new Error(message);
+    return store.upsert({ subject_code, term, grade });
+  },
+
+  deleteEnrollment: async (subjectCode) => ({ deleted: store.remove(subjectCode) }),
+
+  // --- Transcript import (was POST /import/preview + /commit) ---
+  previewTranscript: async (text) => {
+    if (!text || !text.trim()) throw new Error('Paste your transcript text first.');
+    const { courses } = parseTranscript(text);
+    if (courses.length === 0) {
+      throw new Error(
+        'No course rows found. Make sure you pasted the transcript table (the rows with course numbers and grades).'
+      );
+    }
+    return buildPreview(courses, catalog.classifyRow);
+  },
+
+  commitImport: async (enrollments) => {
+    if (!Array.isArray(enrollments) || enrollments.length === 0) {
+      throw new Error('Nothing to import.');
+    }
+    // Re-validate every row (the UI only sends 'ok' rows, but never trust that).
+    for (const e of enrollments) {
+      if (!e || !e.subject_code || !e.term || !e.grade) throw new Error('A row is missing subject/term/grade.');
+      const { status, message } = catalog.classifyRow(e);
+      if (status !== 'ok') throw new Error(message);
+    }
+    return { imported: store.upsertMany(enrollments) };
+  },
+
+  // --- Backup / restore (new; only possible because data is local) ---
+  exportData: () => store.exportData(),
+  importData: (data) => store.importData(data),
 };

@@ -1,5 +1,30 @@
 # CAMT Grade Calculator — Project Context
 
+## ⚡ ARCHITECTURE UPDATE (now a STATIC app — no server, no DB at runtime)
+To deploy cheaply and survive going viral, the app was migrated to **100% static**:
+- **No backend at runtime.** The React app (`client/`) is the whole thing. It's
+  built to static files and hosted for **free** on GitHub Pages (see
+  `.github/workflows/deploy-pages.yml`; base path `/camt-grade-calculator/`).
+- **Data lives in the browser** (`localStorage`, key `camt.enrollments.v1`) via
+  `client/src/store.js` — the logical end of the "save per-browser, not online"
+  choice. A **Backup: Export/Restore JSON** button (`BackupMenu.jsx`) is the
+  manual cross-device / don't-lose-it story.
+- **The catalog is bundled**, not queried: `client/src/data/catalog.json` is a
+  build-time snapshot of the groups/subjects/grades tables. Regenerate it with
+  `node scripts/dump-catalog.js` if you change `sql/seed.sql`.
+- **The SQL logic moved to the browser**: `client/src/engine.js` reimplements GPA
+  (was `gpa.js`), category progress / subtree rollup (was `progress.js`'s
+  recursive CTE), and the import preview (was `import.js`); `client/src/catalog.js`
+  holds the validation rule (was `lib/catalog.js`); `client/src/transcriptParser.js`
+  is the ESM copy of `lib/transcriptParser.js`. `client/src/api.js` keeps the SAME
+  method names/shapes as the old fetch client, so `App.jsx`/`TranscriptImport.jsx`
+  didn't change — they just call local functions now. Verified faithful to the SQL
+  via `scripts/verify-engine.mjs`.
+- **The Node/Express/Postgres backend (`src/`, `sql/`, `test/`) is KEPT** as the
+  learning artifact and as the source for regenerating `catalog.json`. It is NOT
+  part of the deploy anymore. Everything below describing "/api" endpoints is the
+  original backend — still runnable locally, but the live app no longer uses it.
+
 ## What this is
 A backend (Node.js + Express + PostgreSQL) replacing a fragile Excel-based degree
 progress / grade tracker my university teacher gave out (CAMT, MMIT program). The

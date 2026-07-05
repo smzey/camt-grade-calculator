@@ -9,7 +9,8 @@
     "start": "node src/server.js",
     "client": "npm --prefix client run dev",
     "client:build": "npm --prefix client run build",
-    "build": "npm --prefix client run build"
+    "build": "npm --prefix client run build",
+    "tunnel": "node scripts/ngrok.js"
   },
   "keywords": [],
   "author": "",
@@ -24,5 +25,7 @@
   "devDependencies": {
     "nodemon": "^3.1.14",
     "supertest": "^7.2.2"
+    ,
+    "ngrok": "^4.3.0"
   }
 }

@@ -1,0 +1,1603 @@
+{
+  "groups": [
+    {
+      "code": 1000,
+      "name": "General Education",
+      "parent_code": null,
+      "req_wil": 30,
+      "req_is": 30
+    },
+    {
+      "code": 1100,
+      "name": "General Education - Required",
+      "parent_code": 1000,
+      "req_wil": 21,
+      "req_is": 21
+    },
+    {
+      "code": 1110,
+      "name": "Learner Person",
+      "parent_code": 1100,
+      "req_wil": 15,
+      "req_is": 15
+    },
+    {
+      "code": 1111,
+      "name": "English 4",
+      "parent_code": 1110,
+      "req_wil": 3,
+      "req_is": 3
+    },
+    {
+      "code": 1112,
+      "name": "Learner Person - Selected",
+      "parent_code": 1110,
+      "req_wil": 3,
+      "req_is": 3
+    },
+    {
+      "code": 1120,
+      "name": "Innovative Co-creator",
+      "parent_code": 1100,
+      "req_wil": 3,
+      "req_is": 3
+    },
+    {
+      "code": 1130,
+      "name": "Active Citizen",
+      "parent_code": 1100,
+      "req_wil": 3,
+      "req_is": 3
+    },
+    {
+      "code": 1200,
+      "name": "General Education - Elective",
+      "parent_code": 1000,
+      "req_wil": 9,
+      "req_is": 9
+    },
+    {
+      "code": 1210,
+      "name": "Learner Person",
+      "parent_code": 1200,
+      "req_wil": 0,
+      "req_is": 0
+    },
+    {
+      "code": 1220,
+      "name": "Active Citizen",
+      "parent_code": 1200,
+      "req_wil": 0,
+      "req_is": 0
+    },
+    {
+      "code": 1230,
+      "name": "Innovative Co-creator",
+      "parent_code": 1200,
+      "req_wil": 0,
+      "req_is": 0
+    },
+    {
+      "code": 2000,
+      "name": "Field of Specialization",
+      "parent_code": null,
+      "req_wil": 90,
+      "req_is": 90
+    },
+    {
+      "code": 2100,
+      "name": "Core Courses",
+      "parent_code": 2000,
+      "req_wil": 33,
+      "req_is": 33
+    },
+    {
+      "code": 2110,
+      "name": "208262 or 954241",
+      "parent_code": 2100,
+      "req_wil": 3,
+      "req_is": 3
+    },
+    {
+      "code": 2120,
+      "name": "Others",
+      "parent_code": 2100,
+      "req_wil": 30,
+      "req_is": 30
+    },
+    {
+      "code": 2200,
+      "name": "Major Courses ",
+      "parent_code": 2000,
+      "req_wil": 57,
+      "req_is": 57
+    },
+    {
+      "code": 2210,
+      "name": "Major Required Courses",
+      "parent_code": 2200,
+      "req_wil": 39,
+      "req_is": 33
+    },
+    {
+      "code": 2220,
+      "name": "Major Electives",
+      "parent_code": 2200,
+      "req_wil": 18,
+      "req_is": 24
+    },
+    {
+      "code": 9000,
+      "name": "Free Electives",
+      "parent_code": null,
+      "req_wil": 6,
+      "req_is": 6
+    }
+  ],
+  "subjects": [
+    {
+      "code": "001101",
+      "name": "Fundamental English 1",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 1110,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "001102",
+      "name": "Fundamental English 2",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 1110,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "001201",
+      "name": "Critical Reading and Effective Writing",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 1110,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "001202",
+      "name": "English in Professional Contexts",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 1111,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "001229",
+      "name": "English for Media Arts",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 1111,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "009103",
+      "name": "Information Leteracy and Information Presentation",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 1210,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "011151",
+      "name": "Reasoning",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 1120,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "011269",
+      "name": "Philosophy of Sufficiency Economy",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 1210,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "012173",
+      "name": "Descriptive Study of Religion",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 1230,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "013110",
+      "name": "Psychology and Daily Life",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 1120,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "050104",
+      "name": "Man and the Modern World",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 1230,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "050113",
+      "name": "Locality in Globalization",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 1220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "057122",
+      "name": "Swimming for Life and Exercise",
+      "is_title": false,
+      "credit": 1,
+      "group_code": 1210,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "057127",
+      "name": "Badminton for Life and Exercise",
+      "is_title": false,
+      "credit": 1,
+      "group_code": 1210,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "103271",
+      "name": "Music Appreciation",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 1220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "109100",
+      "name": "Man and Art",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 1220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "109115",
+      "name": "Life and Aesthetics",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 1220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "127100",
+      "name": "Politics in Everyday Life",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 1220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "140104",
+      "name": "Citizenship",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 1130,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "154100",
+      "name": "Introduction to Geography",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 1220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "154104",
+      "name": "Environmental Conservation",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 1220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "159100",
+      "name": "Modern World in Everyday Life",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 1120,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "159151",
+      "name": "Lanna Society and Culture",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 1220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "176100",
+      "name": "Law and Modern World",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 1230,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "176104",
+      "name": "Rights and Duties of Citizen in Digital Age",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 1210,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "201116",
+      "name": "Science and Global Warming",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 1230,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "201190",
+      "name": "Critical Thinking, Problem Solving and Science Communication",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 1230,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "201192",
+      "name": "Doi Suthep Study",
+      "is_title": false,
+      "credit": 1,
+      "group_code": 1220,
+      "grade_type": "SU",
+      "plan": null
+    },
+    {
+      "code": "204100",
+      "name": "Information Technology and Modern Life",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 1112,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "204123",
+      "name": "Introduction to Data Science",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 1230,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "208262",
+      "name": "Elementary Statistics for Science and Technology",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2110,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "357110",
+      "name": "Insects and Mankind",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 1220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "368100",
+      "name": "Starting an Agribusiness in a Changing World",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 1230,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "602102",
+      "name": "Life and Alternative Energy",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 1220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "603200",
+      "name": "Packaging in Daily Life",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 1230,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "610112",
+      "name": "Food Product Innovation",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 1230,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "702101",
+      "name": "Finance for Daily Life",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 1210,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "703103",
+      "name": "Introduction to Entrepreneurship and Business",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 1120,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "851100",
+      "name": "Introduction to Communication",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 1210,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "888102",
+      "name": "Big Data for Business",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 1210,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "888107",
+      "name": "Business Startup on Digital Platform",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 1230,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "944490",
+      "name": "Informatics Research Methodology",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2210,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "951100",
+      "name": "Modern Life and Animation",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 1220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "953111",
+      "name": "Software for Everyday Life",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 1112,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954100",
+      "name": "Information System for Organization Management",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2120,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954140",
+      "name": "Information Technology Literacy",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2120,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954142",
+      "name": "Fundamental Computer Programming for Modern Management",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2120,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954143",
+      "name": "Data Management",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2120,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954170",
+      "name": "Elementary Business Process Modeling",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2120,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954230",
+      "name": "Financial Tracking in Digital Business",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2120,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954231",
+      "name": "Human Capital Management in Digital Business",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2120,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954241",
+      "name": "Art of Computing",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2110,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954244",
+      "name": "System Analysis and Design for Modern Management",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2120,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954246",
+      "name": "Advanced Computer Programming for Modern Management",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2120,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954248",
+      "name": "Information and Communication Technology",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2120,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954310",
+      "name": "Information Systems for Enterprise Resource Planning",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2210,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954316",
+      "name": "Technology Application in Supply Chain",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954321",
+      "name": "Operations and Service for E-Service",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954322",
+      "name": "Technology in Call Center Management",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954324",
+      "name": "Information and Communication Technology for E-Tourism",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954326",
+      "name": "Information Technology in Event Management",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954340",
+      "name": "Enterprise Database Design and Applications",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2210,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954344",
+      "name": "Computer Networks and Database Security for Organization",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954346",
+      "name": "Application Development for Business Sector",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2210,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954347",
+      "name": "E-Commerce",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954348",
+      "name": "Web Programming",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954365",
+      "name": "Knowledge Management System",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2210,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954370",
+      "name": "Analysis and Design in Materials Management Module",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2210,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954371",
+      "name": "Analysis and Design in Production Planning Module",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954374",
+      "name": "Sales and Distribution for Digital Market",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2210,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954375",
+      "name": "Analysis and Design in Enterprise Asset and Customer Service",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954381",
+      "name": "Preparation for Work Integrated Learning",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2210,
+      "grade_type": "SU",
+      "plan": null
+    },
+    {
+      "code": "954389",
+      "name": "Job Training",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2210,
+      "grade_type": "SU",
+      "plan": "IS"
+    },
+    {
+      "code": "954410",
+      "name": "Information Technology Application in Lean Transformation",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954411",
+      "name": "Using Information Technology to Develop Key Performance Indicators for Business",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954412",
+      "name": "Industrial Excellence Model",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954413",
+      "name": "Decision Making in Information Technology Investment and Organizational Management",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954414",
+      "name": "Preliminary Simulations on Logistics Activities",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954415",
+      "name": "Introduction to Quantitative Business Problems Analysis",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954416",
+      "name": "Information Systems for Supply Chain and Customer Relationship Management",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2210,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954417",
+      "name": "Information System for Maintenance",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954421",
+      "name": "Mobile Device in Business Operation",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954422",
+      "name": "Customer Relationship Management and Supplier Relationship Management in E-Tourism",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954423",
+      "name": "Service Innovation for Competitiveness",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954424",
+      "name": "Introduction to E-Tourism business",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954425",
+      "name": "Marketing Analytics in Hospitality and Tourism Industry",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954426",
+      "name": "Introduction to E-Service",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954430",
+      "name": "Digital Business Ecosystem",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954433",
+      "name": "Service and Operation in E-Tourism",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954440",
+      "name": "Enterprise Portal Application Development",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954442",
+      "name": "Cloud Computing",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954443",
+      "name": "Multimedia for Digital Business",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954444",
+      "name": "ERP Programming",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954445",
+      "name": "Healthcare Information Systems",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954447",
+      "name": "Client -Side Scripting",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954448",
+      "name": "Web Service for Enterprise Systems",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954449",
+      "name": "Rapid Application Development",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954461",
+      "name": "Information Technology for Knowledge Creation",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954462",
+      "name": "Knowledge Engineering and Information Technology Application",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954463",
+      "name": "Information Technology for Learning Organization",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954464",
+      "name": "Information Technology for Knowledge Worker Management",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954466",
+      "name": "Digital Business and Service Psychology",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954467",
+      "name": "Research Development for Workforce in a Digital Age",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954468",
+      "name": "Introduction to Intellectual Capital Management",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954471",
+      "name": "Business Data Mining",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954472",
+      "name": "Business Data Visualization",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954473",
+      "name": "Enterprise Resource Planning Configuration",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954474",
+      "name": "Digital Data Gathering",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954477",
+      "name": "Information Technology for Production System",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954484",
+      "name": "Work Integrated Learning 1",
+      "is_title": false,
+      "credit": 6,
+      "group_code": 2210,
+      "grade_type": "SU",
+      "plan": "WIL"
+    },
+    {
+      "code": "954485",
+      "name": "Work Integrated Learning 2",
+      "is_title": false,
+      "credit": 6,
+      "group_code": 2210,
+      "grade_type": "SU",
+      "plan": "WIL"
+    },
+    {
+      "code": "954491",
+      "name": "Selected Topics in Modern Management and Information Technology",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954494",
+      "name": "Selected Topics in Work Integrated Learning 1",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954495",
+      "name": "Selected Topics in Work Integrated Learning 2",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954496",
+      "name": "Selected Topics in Work Integrated Learning 3",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954497",
+      "name": "Selected Topics in Work Integrated Learning 4",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
+      "code": "954499",
+      "name": "Independent Study",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2210,
+      "grade_type": "SU",
+      "plan": "IS"
+    },
+    {
+      "code": "FoS",
+      "name": "Field of Specialization (>=90)",
+      "is_title": true,
+      "credit": null,
+      "group_code": 2000,
+      "grade_type": null,
+      "plan": null
+    },
+    {
+      "code": "FoS-Cor",
+      "name": "Core Courses (>=33)",
+      "is_title": true,
+      "credit": null,
+      "group_code": 2100,
+      "grade_type": null,
+      "plan": null
+    },
+    {
+      "code": "FoS-Cor-Oth",
+      "name": "Others (>=30)",
+      "is_title": true,
+      "credit": null,
+      "group_code": 2120,
+      "grade_type": null,
+      "plan": null
+    },
+    {
+      "code": "FoS-Cor-SoAC",
+      "name": "208262 or 954241 (>=3)",
+      "is_title": true,
+      "credit": null,
+      "group_code": 2110,
+      "grade_type": null,
+      "plan": null
+    },
+    {
+      "code": "Fos-Maj",
+      "name": "Major Courses  (>=57)",
+      "is_title": true,
+      "credit": null,
+      "group_code": 2200,
+      "grade_type": null,
+      "plan": null
+    },
+    {
+      "code": "FoS-Maj-Ele",
+      "name": "Major Electives (v-- PLEASE SELECT PLAN)",
+      "is_title": true,
+      "credit": null,
+      "group_code": 2220,
+      "grade_type": null,
+      "plan": null
+    },
+    {
+      "code": "FoS-Maj-Req",
+      "name": "Major Required Courses (v-- PLEASE SELECT PLAN)",
+      "is_title": true,
+      "credit": null,
+      "group_code": 2210,
+      "grade_type": null,
+      "plan": null
+    },
+    {
+      "code": "FREE-01",
+      "name": "Free Elective 1 credit",
+      "is_title": false,
+      "credit": 1,
+      "group_code": 9000,
+      "grade_type": null,
+      "plan": null
+    },
+    {
+      "code": "FREE-02",
+      "name": "Free Elective 2 credits",
+      "is_title": false,
+      "credit": 2,
+      "group_code": 9000,
+      "grade_type": null,
+      "plan": null
+    },
+    {
+      "code": "FREE-03",
+      "name": "Free Elective 3 credits",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 9000,
+      "grade_type": null,
+      "plan": null
+    },
+    {
+      "code": "FREE-04",
+      "name": "Free Elective 4 credits",
+      "is_title": false,
+      "credit": 4,
+      "group_code": 9000,
+      "grade_type": null,
+      "plan": null
+    },
+    {
+      "code": "FREE-05",
+      "name": "Free Elective 5 credits",
+      "is_title": false,
+      "credit": 5,
+      "group_code": 9000,
+      "grade_type": null,
+      "plan": null
+    },
+    {
+      "code": "FREE-06",
+      "name": "Free Elective 6 credits",
+      "is_title": false,
+      "credit": 6,
+      "group_code": 9000,
+      "grade_type": null,
+      "plan": null
+    },
+    {
+      "code": "Free-Ele",
+      "name": "Free Electives (>=6)",
+      "is_title": true,
+      "credit": null,
+      "group_code": 9000,
+      "grade_type": null,
+      "plan": null
+    },
+    {
+      "code": "GE",
+      "name": "General Education (>=30)",
+      "is_title": true,
+      "credit": null,
+      "group_code": 1000,
+      "grade_type": null,
+      "plan": null
+    },
+    {
+      "code": "GE-Ele",
+      "name": "General Education - Elective (>=9)",
+      "is_title": true,
+      "credit": null,
+      "group_code": 1200,
+      "grade_type": null,
+      "plan": null
+    },
+    {
+      "code": "GE-Ele-AC",
+      "name": "Active Citizen (>=0)",
+      "is_title": true,
+      "credit": null,
+      "group_code": 1220,
+      "grade_type": null,
+      "plan": null
+    },
+    {
+      "code": "GE-Ele-IC",
+      "name": "Innovative Co-creator (>=0)",
+      "is_title": true,
+      "credit": null,
+      "group_code": 1230,
+      "grade_type": null,
+      "plan": null
+    },
+    {
+      "code": "GE-Ele-LP",
+      "name": "Learner Person (>=0)",
+      "is_title": true,
+      "credit": null,
+      "group_code": 1210,
+      "grade_type": null,
+      "plan": null
+    },
+    {
+      "code": "GE-Req",
+      "name": "General Education - Required (>=21)",
+      "is_title": true,
+      "credit": null,
+      "group_code": 1100,
+      "grade_type": null,
+      "plan": null
+    },
+    {
+      "code": "GE-Req-AC",
+      "name": "Active Citizen (>=3)",
+      "is_title": true,
+      "credit": null,
+      "group_code": 1130,
+      "grade_type": null,
+      "plan": null
+    },
+    {
+      "code": "GE-Req-IC",
+      "name": "Innovative Co-creator (>=3)",
+      "is_title": true,
+      "credit": null,
+      "group_code": 1120,
+      "grade_type": null,
+      "plan": null
+    },
+    {
+      "code": "GE-Req-LP",
+      "name": "Learner Person (>=15)",
+      "is_title": true,
+      "credit": null,
+      "group_code": 1110,
+      "grade_type": null,
+      "plan": null
+    },
+    {
+      "code": "GE-Req-LP-Eng-S",
+      "name": "English 4 (>=3)",
+      "is_title": true,
+      "credit": null,
+      "group_code": 1111,
+      "grade_type": null,
+      "plan": null
+    },
+    {
+      "code": "GE-Req-LP-S",
+      "name": "Learner Person - Selected (>=3)",
+      "is_title": true,
+      "credit": null,
+      "group_code": 1112,
+      "grade_type": null,
+      "plan": null
+    }
+  ],
+  "grades": [
+    {
+      "grade": "A",
+      "point": 4,
+      "type": "AF",
+      "is_cal": true,
+      "is_keep": true,
+      "is_planning": false
+    },
+    {
+      "grade": "B+",
+      "point": 3.5,
+      "type": "AF",
+      "is_cal": true,
+      "is_keep": true,
+      "is_planning": false
+    },
+    {
+      "grade": "B",
+      "point": 3,
+      "type": "AF",
+      "is_cal": true,
+      "is_keep": true,
+      "is_planning": false
+    },
+    {
+      "grade": "C+",
+      "point": 2.5,
+      "type": "AF",
+      "is_cal": true,
+      "is_keep": true,
+      "is_planning": false
+    },
+    {
+      "grade": "C",
+      "point": 2,
+      "type": "AF",
+      "is_cal": true,
+      "is_keep": true,
+      "is_planning": false
+    },
+    {
+      "grade": "D+",
+      "point": 1.5,
+      "type": "AF",
+      "is_cal": true,
+      "is_keep": true,
+      "is_planning": false
+    },
+    {
+      "grade": "D",
+      "point": 1,
+      "type": "AF",
+      "is_cal": true,
+      "is_keep": true,
+      "is_planning": false
+    },
+    {
+      "grade": "F",
+      "point": 0,
+      "type": "AF",
+      "is_cal": true,
+      "is_keep": false,
+      "is_planning": false
+    },
+    {
+      "grade": "S",
+      "point": null,
+      "type": "SU",
+      "is_cal": false,
+      "is_keep": true,
+      "is_planning": false
+    },
+    {
+      "grade": "U",
+      "point": null,
+      "type": "SU",
+      "is_cal": false,
+      "is_keep": false,
+      "is_planning": false
+    },
+    {
+      "grade": "V",
+      "point": null,
+      "type": null,
+      "is_cal": false,
+      "is_keep": false,
+      "is_planning": false
+    },
+    {
+      "grade": "W",
+      "point": null,
+      "type": null,
+      "is_cal": false,
+      "is_keep": false,
+      "is_planning": false
+    },
+    {
+      "grade": "X",
+      "point": null,
+      "type": null,
+      "is_cal": false,
+      "is_keep": true,
+      "is_planning": false
+    },
+    {
+      "grade": "xA",
+      "point": 4,
+      "type": "AF",
+      "is_cal": true,
+      "is_keep": true,
+      "is_planning": true
+    },
+    {
+      "grade": "xB+",
+      "point": 3.5,
+      "type": "AF",
+      "is_cal": true,
+      "is_keep": true,
+      "is_planning": true
+    },
+    {
+      "grade": "xB",
+      "point": 3,
+      "type": "AF",
+      "is_cal": true,
+      "is_keep": true,
+      "is_planning": true
+    },
+    {
+      "grade": "xC+",
+      "point": 2.5,
+      "type": "AF",
+      "is_cal": true,
+      "is_keep": true,
+      "is_planning": true
+    },
+    {
+      "grade": "xC",
+      "point": 2,
+      "type": "AF",
+      "is_cal": true,
+      "is_keep": true,
+      "is_planning": true
+    },
+    {
+      "grade": "xD+",
+      "point": 1.5,
+      "type": "AF",
+      "is_cal": true,
+      "is_keep": true,
+      "is_planning": true
+    },
+    {
+      "grade": "xD",
+      "point": 1,
+      "type": "AF",
+      "is_cal": true,
+      "is_keep": true,
+      "is_planning": true
+    },
+    {
+      "grade": "xF",
+      "point": 0,
+      "type": "AF",
+      "is_cal": true,
+      "is_keep": false,
+      "is_planning": true
+    },
+    {
+      "grade": "xS",
+      "point": null,
+      "type": "SU",
+      "is_cal": false,
+      "is_keep": true,
+      "is_planning": true
+    },
+    {
+      "grade": "xU",
+      "point": null,
+      "type": "SU",
+      "is_cal": false,
+      "is_keep": false,
+      "is_planning": true
+    }
+  ]
+}

@@ -21,6 +21,7 @@ import {
 } from '@camt/ui';
 import { api } from './api';
 import TranscriptImport from './TranscriptImport';
+import BackupMenu from './BackupMenu';
 
 // New enrollments default to this term (the redesign dropped the term picker;
 // term still gets recorded, it just isn't chosen in the UI).
@@ -253,10 +254,16 @@ export default function App() {
           {/* Header: logo + wordmark + WIL/IS toggle */}
           <div className="header">
             <div className="brand">
-              <img src="/camt-logo.jpg" alt="CAMT" className="logo" />
+              {/* BASE_URL is '/' in dev and '/<repo>/' when built for a GitHub
+                  project page, so the logo resolves correctly under any base. */}
+              <img src={`${import.meta.env.BASE_URL}camt-logo.jpg`} alt="CAMT" className="logo" />
               <span className="wordmark">Grade Calculator</span>
             </div>
             <div className="header-actions">
+              <BackupMenu
+                onRestored={() => window.location.reload()}
+                onError={(msg) => setError(msg)}
+              />
               <TranscriptImport onImported={handleImported} />
               <SegmentedToggle
                 value={plan}
