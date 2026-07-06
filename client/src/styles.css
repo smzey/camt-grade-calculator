@@ -76,37 +76,95 @@ body {
   color: var(--color-ink);
 }
 
-/* --- Import transcript flow --- */
+/* --- Import transcript flow ---
+   The redesigned header makes Import the hero action: a single filled copper
+   button (the first thing most students want to do is get their grades in). */
 .import-btn {
-  border: 1px solid var(--color-surface-2);
-  background: var(--color-surface);
-  color: var(--color-ink-strong);
+  border: none;
+  background: var(--color-copper);
+  color: #fff;
   border-radius: 999px;
-  padding: 8px 12px;
+  padding: 8px 14px;
   font-size: 12.5px;
   font-weight: 700;
   cursor: pointer;
+  box-shadow: var(--shadow-card);
 }
 
 .import-btn:hover {
-  background: var(--color-surface-2);
+  filter: brightness(1.06);
 }
 
-/* Backup / restore — quieter siblings of the import button (text-only pills). */
-.backup-btn {
+/* Backup / restore now live behind an overflow (⋯) menu so they don't compete
+   with Import for attention. This is the round trigger button. */
+.overflow {
+  position: relative;
+}
+
+.overflow-btn {
   border: 1px solid var(--color-surface-2);
-  background: transparent;
+  background: var(--color-surface);
   color: var(--color-muted);
   border-radius: 999px;
-  padding: 8px 11px;
-  font-size: 12px;
+  width: 34px;
+  height: 34px;
+  font-size: 16px;
   font-weight: 700;
+  line-height: 1;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.backup-btn:hover {
+.overflow-btn:hover,
+.overflow-btn[aria-expanded='true'] {
   background: var(--color-surface-2);
   color: var(--color-ink-strong);
+}
+
+/* The dropdown panel of quieter actions (Export / Restore). */
+.overflow-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 172px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-surface-2);
+  border-radius: 12px;
+  box-shadow: var(--shadow-card);
+  padding: 6px;
+  z-index: 900;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.overflow-item {
+  border: none;
+  background: transparent;
+  color: var(--color-ink-strong);
+  border-radius: 8px;
+  padding: 9px 11px;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.overflow-item:hover {
+  background: var(--color-surface-2);
+}
+
+.overflow-item-sub {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-muted);
+  margin-top: 1px;
 }
 
 .modal-overlay {
