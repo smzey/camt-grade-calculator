@@ -260,11 +260,6 @@ export default function App() {
               <span className="wordmark">Grade Calculator</span>
             </div>
             <div className="header-actions">
-              <BackupMenu
-                onRestored={() => window.location.reload()}
-                onError={(msg) => setError(msg)}
-              />
-              <TranscriptImport onImported={handleImported} />
               <SegmentedToggle
                 value={plan}
                 onChange={changePlan}
@@ -272,6 +267,11 @@ export default function App() {
                   { value: 'WIL', label: 'WIL' },
                   { value: 'IS', label: 'IS' },
                 ]}
+              />
+              <TranscriptImport onImported={handleImported} />
+              <BackupMenu
+                onRestored={() => window.location.reload()}
+                onError={(msg) => setError(msg)}
               />
             </div>
           </div>

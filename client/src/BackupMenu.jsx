@@ -3,15 +3,38 @@
 // up and move them: Export downloads a JSON file; Restore reads one back in.
 // This is the whole "sync between devices" story for a server-less app — manual,
 // but free and fully private.
+//
+// In the redesigned header these are the *quiet* actions, so they live behind an
+// overflow (⋯) menu instead of competing with the primary "Import" button.
 
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { api } from './api';
 
 export default function BackupMenu({ onRestored, onError }) {
   const fileRef = useRef(null);
+  const rootRef = useRef(null);
+  const [open, setOpen] = useState(false);
+
+  // Close the menu on an outside click or Escape — standard dropdown behaviour.
+  useEffect(() => {
+    if (!open) return;
+    function onDown(e) {
+      if (rootRef.current && !rootRef.current.contains(e.target)) setOpen(false);
+    }
+    function onKey(e) {
+      if (e.key === 'Escape') setOpen(false);
+    }
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
 
   // Serialize the local data and trigger a download via a temporary object URL.
   function exportBackup() {
+    setOpen(false);
     try {
       const blob = new Blob([JSON.stringify(api.exportData(), null, 2)], {
         type: 'application/json',
@@ -42,18 +65,46 @@ export default function BackupMenu({ onRestored, onError }) {
   }
 
   return (
-    <>
-      <button type="button" className="backup-btn" onClick={exportBackup} title="Download a backup of your grades">
-        ⬇ Export
-      </button>
+    <div className="overflow" ref={rootRef}>
       <button
         type="button"
-        className="backup-btn"
-        onClick={() => fileRef.current?.click()}
-        title="Restore grades from a backup file"
+        className="overflow-btn"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-label="Backup & more"
+        title="Backup & more"
+        onClick={() => setOpen((v) => !v)}
       >
-        ⤒ Restore
+        ⋯
       </button>
+
+      {open && (
+        <div className="overflow-menu" role="menu">
+          <button type="button" className="overflow-item" role="menuitem" onClick={exportBackup}>
+            <span>⬇</span>
+            <span>
+              Export backup
+              <span className="overflow-item-sub">Download your grades as JSON</span>
+            </span>
+          </button>
+          <button
+            type="button"
+            className="overflow-item"
+            role="menuitem"
+            onClick={() => {
+              setOpen(false);
+              fileRef.current?.click();
+            }}
+          >
+            <span>⤒</span>
+            <span>
+              Restore backup
+              <span className="overflow-item-sub">Load grades from a file</span>
+            </span>
+          </button>
+        </div>
+      )}
+
       <input
         ref={fileRef}
         type="file"
@@ -61,6 +112,6 @@ export default function BackupMenu({ onRestored, onError }) {
         onChange={onFile}
         style={{ display: 'none' }}
       />
-    </>
+    </div>
   );
 }
