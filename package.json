@@ -10,6 +10,7 @@
     "client": "npm --prefix client run dev",
     "client:build": "npm --prefix client run build",
     "build": "npm --prefix client run build",
+    "deploy": "node scripts/deploy-gh-pages.mjs",
     "tunnel": "node scripts/ngrok.js"
   },
   "keywords": [],

@@ -9,8 +9,10 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { api } from './api';
+import { useLang } from './LanguageContext';
 
 export default function BackupMenu({ onRestored, onError }) {
+  const { t } = useLang();
   const fileRef = useRef(null);
   const rootRef = useRef(null);
   const [open, setOpen] = useState(false);
@@ -71,8 +73,8 @@ export default function BackupMenu({ onRestored, onError }) {
         className="overflow-btn"
         aria-haspopup="menu"
         aria-expanded={open}
-        aria-label="Backup & more"
-        title="Backup & more"
+        aria-label={t('backup.more')}
+        title={t('backup.more')}
         onClick={() => setOpen((v) => !v)}
       >
         ⋯
@@ -83,8 +85,8 @@ export default function BackupMenu({ onRestored, onError }) {
           <button type="button" className="overflow-item" role="menuitem" onClick={exportBackup}>
             <span>⬇</span>
             <span>
-              Export backup
-              <span className="overflow-item-sub">Download your grades as JSON</span>
+              {t('backup.export.label')}
+              <span className="overflow-item-sub">{t('backup.export.sub')}</span>
             </span>
           </button>
           <button
@@ -98,8 +100,8 @@ export default function BackupMenu({ onRestored, onError }) {
           >
             <span>⤒</span>
             <span>
-              Restore backup
-              <span className="overflow-item-sub">Load grades from a file</span>
+              {t('backup.restore.label')}
+              <span className="overflow-item-sub">{t('backup.restore.sub')}</span>
             </span>
           </button>
         </div>

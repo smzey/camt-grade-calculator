@@ -20,6 +20,15 @@ To deploy cheaply and survive going viral, the app was migrated to **100% static
   method names/shapes as the old fetch client, so `App.jsx`/`TranscriptImport.jsx`
   didn't change — they just call local functions now. Verified faithful to the SQL
   via `scripts/verify-engine.mjs`.
+- **EN/TH i18n**: `client/src/i18n.js` (string dictionaries + `{var}` interpolation
+  + Thai category-name map, keyed by group code — ⚠️ names are best-effort, verify
+  against official program names), `client/src/LanguageContext.jsx` (provider +
+  `useLang()` → `{ t, tCat, lang, setLang }`, persists `lang` in localStorage).
+  Header has an EN/ไทย toggle. Course titles stay English; UI + category names switch.
+- **Import UX**: the modal auto-previews live as you paste (debounced, no button)
+  and shows a CSS "where to copy" guide until there's a preview. The dashboard tree
+  no longer renders the selected pillar as its own row (removed the redundant
+  "General Education > General Education" nesting).
 - **The Node/Express/Postgres backend (`src/`, `sql/`, `test/`) is KEPT** as the
   learning artifact and as the source for regenerating `catalog.json`. It is NOT
   part of the deploy anymore. Everything below describing "/api" endpoints is the

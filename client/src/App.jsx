@@ -22,6 +22,8 @@ import {
 import { api } from './api';
 import TranscriptImport from './TranscriptImport';
 import BackupMenu from './BackupMenu';
+import { useLang } from './LanguageContext';
+import { LANGS } from './i18n';
 
 // New enrollments default to this term (the redesign dropped the term picker;
 // term still gets recorded, it just isn't chosen in the UI).
@@ -39,6 +41,7 @@ function validGrades(subject, grades) {
 // The grade dropdown: real grades and planning (what-if) grades in two optgroups,
 // built on the design system's <Select>.
 function GradeSelect({ subject, grades, value, disabled, onChange }) {
+  const { t } = useLang();
   const valid = validGrades(subject, grades);
   const label = (g) => (g.point != null ? `${g.grade} (${g.point})` : g.grade);
   const real = valid.filter((g) => !g.is_planning);
@@ -51,7 +54,7 @@ function GradeSelect({ subject, grades, value, disabled, onChange }) {
       onChange={(e) => onChange(e.target.value)}
     >
       <option value="">—</option>
-      <optgroup label="Grade">
+      <optgroup label={t('grade.group')}>
         {real.map((g) => (
           <option key={g.grade} value={g.grade}>
             {label(g)}
@@ -59,7 +62,7 @@ function GradeSelect({ subject, grades, value, disabled, onChange }) {
         ))}
       </optgroup>
       {planning.length > 0 && (
-        <optgroup label="Planned (what-if)">
+        <optgroup label={t('grade.planned')}>
           {planning.map((g) => (
             <option key={g.grade} value={g.grade}>
               {label(g)}
@@ -72,6 +75,7 @@ function GradeSelect({ subject, grades, value, disabled, onChange }) {
 }
 
 export default function App() {
+  const { t, tCat, lang, setLang } = useLang();
   const [plan, setPlan] = useState(() => localStorage.getItem('plan') || 'WIL');
 
   const [groups, setGroups] = useState([]);
@@ -132,6 +136,13 @@ export default function App() {
   // --- Derived lookups ---
   const progressByCode = useMemo(() => new Map(progress.map((p) => [p.code, p])), [progress]);
   const topGroups = useMemo(() => groups.filter((g) => g.parent_code == null), [groups]);
+  // Categories whose required credits actually differ between WIL and IS. We badge
+  // these so it's obvious which numbers the plan toggle affects (derived from the
+  // data, so it stays correct if the curriculum changes).
+  const planVaries = useMemo(
+    () => new Set(groups.filter((g) => g.req_wil !== g.req_is).map((g) => g.code)),
+    [groups]
+  );
   const childrenOf = useMemo(() => {
     const m = new Map();
     for (const g of groups) {
@@ -235,13 +246,26 @@ export default function App() {
         for (const child of kids) walk(child, depth + 1, parentVisible && isOpen);
       }
     };
+    // The selected pillar is already named by the tab + ring above, so we DON'T
+    // render it as its own tree row (that was the redundant "General Education >
+    // General Education" nesting). Start at its children instead — or, for a leaf
+    // pillar with no child groups (e.g. Free Electives), show its subjects directly.
     const top = groups.find((g) => g.code === selectedTop);
-    if (top) walk(top, 0, true);
+    if (top) {
+      const kids = childrenOf.get(top.code) || [];
+      if (kids.length === 0) {
+        for (const s of subjectsByGroup.get(top.code) || []) {
+          out.push({ kind: 'subject', visible: true, subject: s, indent: 4 });
+        }
+      } else {
+        for (const child of kids) walk(child, 0, true);
+      }
+    }
     return out;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTop, groups, childrenOf, subjectsByGroup, progressByCode, expanded]);
 
-  if (loading) return <div className="page"><p className="muted">Loading…</p></div>;
+  if (loading) return <div className="page"><p className="muted">{t('loading')}</p></div>;
 
   const fmt = (v) => (v == null ? '—' : v.toFixed(2));
   const selectedTopName = groups.find((g) => g.code === selectedTop)?.name || '';
@@ -257,7 +281,7 @@ export default function App() {
               {/* BASE_URL is '/' in dev and '/<repo>/' when built for a GitHub
                   project page, so the logo resolves correctly under any base. */}
               <img src={`${import.meta.env.BASE_URL}camt-logo.jpg`} alt="CAMT" className="logo" />
-              <span className="wordmark">Grade Calculator</span>
+              <span className="wordmark">{t('app.title')}</span>
             </div>
             <div className="header-actions">
               <SegmentedToggle
@@ -268,6 +292,7 @@ export default function App() {
                   { value: 'IS', label: 'IS' },
                 ]}
               />
+              <SegmentedToggle value={lang} onChange={setLang} options={LANGS} />
               <TranscriptImport onImported={handleImported} />
               <BackupMenu
                 onRestored={() => window.location.reload()}
@@ -288,9 +313,9 @@ export default function App() {
                       percent={pctOf(earned, required)}
                       met={met}
                       selected={g.code === selectedTop}
-                      sublabel={`${earned}/${required} cr`}
+                      sublabel={`${earned}/${required}`}
                     />
-                    <div className="ring-name">{g.name}</div>
+                    <div className="ring-name">{tCat(g.code, g.name)}</div>
                   </div>
                   {!isLast && <div className="connector" />}
                 </div>
@@ -303,11 +328,11 @@ export default function App() {
             <div className="gpa-stats">
               <div>
                 <div className="gpa-value">{fmt(gpa.gpa_actual)}</div>
-                <div className="gpa-cap">GPA actual · {gpa.credits_actual} cr</div>
+                <div className="gpa-cap">{t('gpa.actual')} · {gpa.credits_actual} {t('unit.cr')}</div>
               </div>
               <div>
                 <div className="gpa-value">{fmt(gpa.gpa_projected)}</div>
-                <div className="gpa-cap">GPA projected · {gpa.credits_projected} cr</div>
+                <div className="gpa-cap">{t('gpa.projected')} · {gpa.credits_projected} {t('unit.cr')}</div>
               </div>
             </div>
           </div>
@@ -322,7 +347,7 @@ export default function App() {
                 className={`pillar-tab${g.code === selectedTop ? ' pillar-tab-active' : ''}`}
                 onClick={() => setSelectedTop(g.code)}
               >
-                {g.name}
+                {tCat(g.code, g.name)}
               </button>
             ))}
           </div>
@@ -330,12 +355,12 @@ export default function App() {
           {/* Two-pane category browser */}
           <div className="browser">
             <div className="rail">
-              <div className="rail-eyebrow">{selectedTopName}</div>
+              <div className="rail-eyebrow">{tCat(selectedTop, selectedTopName)}</div>
               {railItems.map((g) => {
                 const { earned, required, met } = progOf(g.code);
                 return (
                   <div className="rail-row" key={g.code} onClick={() => toggle(g.code)}>
-                    <span className="rail-name">{g.name}</span>
+                    <span className="rail-name">{tCat(g.code, g.name)}</span>
                     <span
                       className="rail-pct"
                       style={{ color: met ? 'var(--color-success)' : 'var(--color-copper)' }}
@@ -364,7 +389,12 @@ export default function App() {
                       >
                         ▶
                       </span>
-                      <span className="cat-name">{row.name}</span>
+                      <span className="cat-name">{tCat(row.code, row.name)}</span>
+                      {planVaries.has(row.code) && (
+                        <Badge variant="pill" className="plan-badge" title={t('plan.varies')}>
+                          {plan}
+                        </Badge>
+                      )}
                       {row.required > 0 ? (
                         // Fixed-requirement category: show the progress bar.
                         <ProgressBar
@@ -385,7 +415,7 @@ export default function App() {
                         {row.required > 0
                           ? `${row.earned}/${row.required}`
                           : row.earned > 0
-                            ? `${row.earned} cr`
+                            ? `${row.earned} ${t('unit.cr')}`
                             : '—'}
                       </span>
                     </div>
@@ -398,7 +428,7 @@ export default function App() {
                     <span className="subj-code">{s.code}</span>
                     <span className="subj-name">{s.name}</span>
                     <Badge variant="pill" className="subj-chip">
-                      {s.credit} cr
+                      {s.credit}
                     </Badge>
                     <GradeSelect
                       subject={s}
@@ -420,10 +450,7 @@ export default function App() {
           </Banner>
         )}
 
-        <div className="footer">
-          Grades save to this browser only · CAMT MMIT · College of Arts, Media and Technology,
-          Chiang Mai University
-        </div>
+        <div className="footer">{t('footer')}</div>
       </div>
     </div>
   );
