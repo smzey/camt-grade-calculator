@@ -14,17 +14,35 @@ export const grades = data.grades; // [{ grade, point, type, is_cal, is_keep, is
 export const subjectMap = new Map(subjects.map((s) => [s.code, s]));
 export const gradeMap = new Map(grades.map((g) => [g.grade, g]));
 
+// Anything the catalog doesn't know about still counts toward the degree as a
+// Free Elective, so credits land in that top-level group rather than vanishing.
+export const FREE_ELECTIVE_GROUP = 9000;
+
 // Classify one { subject_code, grade } row against the catalog. This is the exact
 // rule the old server enforced (POST /enrollments + import validation), moved
 // verbatim to the client: subject exists, isn't a title/header row, grade exists,
 // and the grade's type fits the subject's grade_type.
+//
+// Two statuses are NOT errors, they're states a row can legitimately be in:
+//   in_progress   — a course with no grade yet (imported from a registration
+//                   schedule). Counts as credits underway, not credits earned.
+//   free_elective — a graded course outside the catalog; counts under group 9000.
 export function classifyRow({ subject_code, grade }) {
   const s = subjectMap.get(subject_code);
+  const noGrade = grade == null || grade === '';
   if (!s) {
-    return { status: 'unmatched_subject', message: `Course ${subject_code} is not in the curriculum catalog` };
+    if (noGrade) {
+      return { status: 'in_progress', message: `${subject_code} — currently studying (Free Elective)` };
+    }
+    return gradeMap.has(grade)
+      ? { status: 'free_elective', message: `${subject_code} counts as a Free Elective` }
+      : { status: 'unmatched_subject', message: `Course ${subject_code} is not in the curriculum catalog` };
   }
   if (s.is_title) {
     return { status: 'title_row', message: `${subject_code} is a section header, not a course` };
+  }
+  if (noGrade) {
+    return { status: 'in_progress', message: `${subject_code} — currently studying` };
   }
   const g = gradeMap.get(grade);
   if (!g) {

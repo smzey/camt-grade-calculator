@@ -1009,6 +1009,15 @@
       "plan": null
     },
     {
+      "code": "954450",
+      "name": "Lowcodization",
+      "is_title": false,
+      "credit": 3,
+      "group_code": 2220,
+      "grade_type": "AF",
+      "plan": null
+    },
+    {
       "code": "954461",
       "name": "Information Technology for Knowledge Creation",
       "is_title": false,

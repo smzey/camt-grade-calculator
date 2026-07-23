@@ -13,3 +13,4 @@ export { Badge } from './Badge.jsx';
 export { Banner } from './Banner.jsx';
 export { ScoreRing } from './ScoreRing.jsx';
 export { SegmentedToggle } from './SegmentedToggle.jsx';
+export { CreditSpine } from './CreditSpine.jsx';

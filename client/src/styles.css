@@ -79,56 +79,112 @@ body {
 /* --- Import transcript flow ---
    The redesigned header makes Import the hero action: a single filled copper
    button (the first thing most students want to do is get their grades in). */
+/* The one action on the page. Icon-only and the same 34px round as the burger,
+   so the header is two discs — but this one is filled with the system's copper
+   as a lit surface (135°; the meters run 90°, and a left-pale disc would read
+   as a half-filled gauge), which is what marks it as primary. Its shadow is
+   copper-tinted and tight — contact plus lift — because --shadow-card is a
+   34px blur built for the 860px panel and turns to grey haze at this size. */
 .import-btn {
   border: none;
-  background: var(--color-copper);
+  background: linear-gradient(135deg, var(--color-copper-soft), var(--color-copper));
   color: #fff;
   border-radius: 999px;
-  padding: 8px 14px;
-  font-size: 12.5px;
-  font-weight: 700;
+  width: 34px;
+  height: 34px;
+  padding: 0;
   cursor: pointer;
-  box-shadow: var(--shadow-card);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 1px 2px rgb(90 35 15 / 0.2),
+    0 3px 9px rgb(179 83 47 / 0.26);
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease,
+    filter 0.12s ease;
 }
 
 .import-btn:hover {
-  filter: brightness(1.06);
+  /* Deepen rather than brighten: brightness() on a gradient washes the dark end
+     out and the pill goes chalky. */
+  filter: saturate(1.08);
+  transform: translateY(-1px);
+  box-shadow:
+    0 1px 2px rgb(90 35 15 / 0.22),
+    0 6px 16px rgb(179 83 47 / 0.32);
 }
 
-/* Backup / restore now live behind an overflow (⋯) menu so they don't compete
-   with Import for attention. This is the round trigger button. */
-.overflow {
+/* Pressed: settles onto the surface, shadow collapses to contact only. */
+.import-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgb(90 35 15 / 0.26);
+}
+
+.import-btn:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
+}
+
+/* The clipboard states the action — the modal asks you to paste. Deliberately
+   not the tray used for backup restore: that one means "a file", this one means
+   "what's on your clipboard". */
+.import-icon {
+  display: block;
+  flex: 0 0 15px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .import-btn {
+    transition: none;
+  }
+  .import-btn:hover,
+  .import-btn:active {
+    transform: none;
+  }
+}
+
+/* Plan, language and backup live behind one gear in the far corner, so Import
+   is the only action competing for attention. This is the round trigger. */
+.settings {
   position: relative;
 }
 
-.overflow-btn {
+.settings-btn {
   border: 1px solid var(--color-surface-2);
   background: var(--color-surface);
   color: var(--color-muted);
   border-radius: 999px;
   width: 34px;
   height: 34px;
-  font-size: 16px;
-  font-weight: 700;
   line-height: 1;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  transition:
+    background 0.12s,
+    color 0.12s;
 }
 
-.overflow-btn:hover,
-.overflow-btn[aria-expanded='true'] {
+.burger {
+  display: block;
+}
+
+.settings-btn:hover,
+.settings-btn[aria-expanded='true'] {
   background: var(--color-surface-2);
   color: var(--color-ink-strong);
 }
 
-/* The dropdown panel of quieter actions (Export / Restore). */
-.overflow-menu {
+/* The panel. Wider than a plain action menu because two of its rows carry a
+   label and a control side by side. */
+.settings-panel {
   position: absolute;
   top: calc(100% + 6px);
   right: 0;
-  min-width: 172px;
+  min-width: 244px;
   background: var(--color-surface);
   border: 1px solid var(--color-surface-2);
   border-radius: 12px;
@@ -140,7 +196,29 @@ body {
   gap: 2px;
 }
 
-.overflow-item {
+/* A setting you leave set: name on the left, control on the right. */
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 11px;
+}
+
+.settings-row-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--color-ink-strong);
+}
+
+.settings-sep {
+  height: 1px;
+  background: var(--color-divider);
+  margin: 4px 5px;
+}
+
+/* A one-shot action (export / restore). */
+.settings-item {
   border: none;
   background: transparent;
   color: var(--color-ink-strong);
@@ -155,11 +233,70 @@ body {
   gap: 9px;
 }
 
-.overflow-item:hover {
+.settings-item:hover {
   background: var(--color-surface-2);
 }
 
-.overflow-item-sub {
+/* The icon supports the label, it doesn't lead — so it sits a step back in the
+   text ramp and only comes up to full ink on hover. Fixed slot keeps both
+   labels starting on the same x. */
+.settings-icon {
+  display: block;
+  flex: 0 0 16px;
+  color: var(--color-subtle);
+  transition: color 0.12s;
+}
+
+.settings-item:hover .settings-icon {
+  color: var(--color-copper);
+}
+
+/* Destructive action: reads as ordinary until you're over it, then commits to
+   the danger colour. Loud by default would make the panel feel hazardous. */
+.settings-item-danger:hover {
+  background: var(--color-danger-bg);
+  color: var(--color-danger-ink);
+}
+
+.settings-item-danger:hover .settings-icon {
+  color: var(--color-danger-ink);
+}
+
+/* Inline confirm, in place of the row it replaces. */
+.settings-confirm {
+  padding: 9px 11px 10px;
+}
+
+.settings-confirm-text {
+  margin: 0 0 10px;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--color-muted);
+}
+
+.settings-confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.btn-danger {
+  border: none;
+  border-radius: 999px;
+  padding: 7px 13px;
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--color-danger-ink);
+  cursor: pointer;
+}
+
+.btn-danger:hover {
+  filter: saturate(1.1);
+}
+
+.settings-item-sub {
   display: block;
   font-size: 11px;
   font-weight: 500;
@@ -178,21 +315,33 @@ body {
   z-index: 1000;
 }
 
+/* Three bands: pinned head, scrolling body, pinned actions. The modal itself
+   never scrolls — only .modal-body does — so there is exactly ONE scrollbar and
+   the Import button stays on screen however long the preview gets. */
 .modal {
   width: min(760px, 100%);
   max-height: min(85vh, 760px);
-  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   background: var(--color-surface);
   border-radius: 18px;
   box-shadow: var(--shadow-card);
-  padding: 22px 24px 24px;
 }
 
 .modal-head {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 14px;
+  padding: 20px 24px 12px;
+}
+
+.modal-body {
+  flex: 1 1 auto;
+  min-height: 0; /* lets a flex child actually scroll instead of growing */
+  overflow-y: auto;
+  padding: 0 24px 4px;
 }
 
 .modal-head h2 {
@@ -223,13 +372,43 @@ body {
   min-height: 220px;
   font: inherit;
   background: var(--color-surface-2);
+  transition: min-height 0.18s ease;
 }
 
+/* Once a preview exists the paste box has done its job — it steps aside so the
+   rows you're about to import get the space. Focusing it restores full height,
+   so correcting a paste never means fighting a cramped field. */
+.paste-box-compact {
+  min-height: 76px;
+}
+
+.paste-box-compact:focus {
+  min-height: 220px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .paste-box {
+    transition: none;
+  }
+}
+
+/* Pinned action bar. The top border is the seam that tells you content
+   continues above it when the body is scrolled. */
 .modal-actions {
+  flex: 0 0 auto;
   display: flex;
+  align-items: center;
   justify-content: flex-end;
   gap: 10px;
-  margin-top: 16px;
+  padding: 12px 24px 16px;
+  border-top: 1px solid var(--color-divider);
+  background: var(--color-surface);
+}
+
+.modal-actions-note {
+  margin-right: auto;
+  font-size: 12px;
+  color: var(--color-muted);
 }
 
 /* Live "reading…" note under the textarea while the debounce parses. */
@@ -240,79 +419,184 @@ body {
   font-style: italic;
 }
 
-/* --- "Where to copy" visual guide --- */
-.copy-guide {
+/* --- "How to copy" animated guide ---------------------------------------
+   A small redraw of the CMU registration table with a cursor that drags the
+   selection down it, then flashes the copy shortcut. Decorative: the numbered
+   steps underneath say the same thing in words. */
+.guide {
   margin-top: 14px;
-  border: 1px dashed var(--color-surface-2);
+  border: 1px dashed var(--color-border-strong);
   border-radius: 12px;
-  padding: 12px 14px 14px;
+  padding: 13px 14px 4px;
   background: var(--color-surface-2);
 }
 
-.copy-guide-title {
+.guide-title {
   font-size: 12.5px;
   font-weight: 700;
   color: var(--color-ink-strong);
   margin-bottom: 10px;
 }
 
-.mini-table {
-  font-size: 11.5px;
-  font-variant-numeric: tabular-nums;
+/* The stage the cursor moves over — positioning context for the overlays. */
+.guide-stage {
+  position: relative;
   border-radius: 8px;
   overflow: hidden;
   background: var(--color-surface);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  user-select: none;
 }
 
-.mini-row {
+/* Registration-site blue, not app copper: this depicts another product, and
+   the colour is the cue for "the page you should be looking at". */
+.guide-head,
+.guide-row,
+.guide-total {
   display: grid;
-  grid-template-columns: 26px 60px minmax(0, 1fr) 34px;
+  grid-template-columns: 52px minmax(0, 1fr) 40px;
   gap: 8px;
-  padding: 6px 10px;
+  padding: 0 9px;
   align-items: center;
+  height: 21px;
 }
 
-.mini-head {
-  color: var(--color-subtle);
+.guide-head {
+  background: #2f6d99;
+  color: #fff;
   font-weight: 700;
+  font-size: 9px;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
-  font-size: 9.5px;
-  letter-spacing: 0.04em;
 }
 
-.mini-title {
+.guide-rows {
+  position: relative;
+}
+
+.guide-row {
+  position: relative;
+  z-index: 1;
+  color: var(--color-ink);
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.guide-code {
+  color: var(--color-muted);
+}
+
+.guide-name {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: var(--color-ink);
 }
 
-/* The highlighted "select these" band drawn over the example rows. */
-.mini-select-band {
+.guide-num {
+  text-align: right;
+}
+
+.guide-total {
   position: relative;
-  border: 2px solid var(--color-copper);
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--color-copper) 10%, transparent);
-}
-
-.mini-select-tag {
-  position: absolute;
-  top: -9px;
-  right: 8px;
-  background: var(--color-copper);
+  z-index: 1;
+  background: #2f6d99;
   color: #fff;
-  font-size: 9.5px;
   font-weight: 700;
-  padding: 1px 7px;
-  border-radius: 999px;
-  white-space: nowrap;
 }
 
-.copy-guide-step {
-  margin: 12px 2px 0;
+/* 4 rows x 21px. The band stops above the total row — that line isn't needed,
+   though including it does no harm. */
+.guide-band {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 0;
+  z-index: 0;
+  background: #accef7;
+  animation: guide-band 7s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.guide-cursor {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  animation: guide-cursor 7s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.guide-key {
+  position: absolute;
+  right: 10px;
+  bottom: 8px;
+  z-index: 2;
+  background: var(--color-ink);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  opacity: 0;
+  animation: guide-key 7s ease infinite;
+}
+
+/* Cursor: settles on the first row, drags to the last, holds. */
+@keyframes guide-cursor {
+  0% { transform: translate(14px, 14px); opacity: 0; }
+  6% { transform: translate(14px, 24px); opacity: 1; }
+  16% { transform: translate(18px, 30px); opacity: 1; }
+  52% { transform: translate(150px, 96px); opacity: 1; }
+  90% { transform: translate(150px, 96px); opacity: 1; }
+  100% { transform: translate(150px, 96px); opacity: 0; }
+}
+
+/* Selection paints in behind it, on the same timing so they stay locked. */
+@keyframes guide-band {
+  0%, 16% { height: 0; opacity: 0; }
+  17% { height: 0; opacity: 1; }
+  52% { height: 84px; opacity: 1; }
+  90% { height: 84px; opacity: 1; }
+  100% { height: 84px; opacity: 0; }
+}
+
+@keyframes guide-key {
+  0%, 56% { opacity: 0; transform: scale(0.92); }
+  62% { opacity: 1; transform: scale(1); }
+  84% { opacity: 1; transform: scale(1); }
+  92%, 100% { opacity: 0; transform: scale(1); }
+}
+
+.guide-steps {
+  margin: 11px 0 0;
+  padding-left: 17px;
   font-size: 11.5px;
-  line-height: 1.55;
+  line-height: 1.65;
   color: var(--color-muted);
+}
+
+.guide-steps li {
+  padding-left: 2px;
+}
+
+.guide-steps li::marker {
+  color: var(--color-copper);
+  font-weight: 700;
+}
+
+/* Stopped, the guide shows its END state — fully selected with the shortcut
+   visible — which is the frame that carries the instruction. */
+@media (prefers-reduced-motion: reduce) {
+  .guide-band {
+    animation: none;
+    height: 84px;
+  }
+  .guide-cursor {
+    animation: none;
+    transform: translate(150px, 96px);
+  }
+  .guide-key {
+    animation: none;
+    opacity: 1;
+  }
 }
 
 .btn-ghost,
@@ -355,12 +639,13 @@ body {
   font-size: 13px;
 }
 
+/* No max-height/overflow of its own: nesting a scroll area inside the modal's
+   scroll area means the wheel stops working the moment the pointer crosses into
+   it. The body is the only thing that scrolls. */
 .preview-table {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  max-height: 420px;
-  overflow: auto;
   border: 1px solid var(--color-divider);
   border-radius: 12px;
   padding: 8px;
@@ -408,172 +693,154 @@ body {
   justify-self: end;
 }
 
-/* --- Score rings --- */
-.rings {
-  padding: 18px 30px 8px;
+/* --- Degree summary (hero figure + GPA + plan + the credit spine) --- */
+.summary {
+  padding: 6px 26px 24px;
+}
+
+.figures {
   display: flex;
   align-items: flex-start;
-  gap: 0;
+  gap: 38px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
 }
 
-.ring-cell {
-  display: flex;
-  align-items: center;
-}
-
-.ring-col {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  flex: 0 0 auto;
-}
-
-.ring-name {
-  font-size: 12px;
+/* Shared eyebrow above every figure. Uppercase + tracked so it reads as a
+   label and never competes with the number under it. */
+.eyebrow {
+  font-size: 10px;
   font-weight: 700;
-  color: var(--color-ink-strong);
-  max-width: 104px;
-  text-align: center;
-  line-height: 1.25;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--color-subtle);
+  margin-bottom: 7px;
 }
 
-.connector {
-  flex: 1;
-  height: 3px;
-  background: var(--color-ring-track);
-  margin: 0 -2px 28px;
-  border-radius: 2px;
-}
-
-/* --- GPA strip --- */
-.gpa-strip {
-  margin: 12px 26px 4px;
-  padding: 12px 18px;
-  border-radius: 13px;
-  background: linear-gradient(135deg, var(--color-gpa-to), var(--color-gpa-from));
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.gpa-stats {
-  display: flex;
-  gap: 30px;
-}
-
-.gpa-value {
+/* The one number the page leads with: credits still to earn. Deliberately
+   PROPORTIONAL figures, not tabular — tabular-nums gives every digit the width
+   of a '0', which looks loose at display sizes. Tabular is for columns. */
+.hero-num {
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 22px;
-  color: #fff;
+  font-size: 56px;
+  line-height: 0.9;
+  color: var(--color-ink);
 }
 
-.gpa-cap {
-  font-size: 10px;
-  color: #fff;
-  opacity: 0.9;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-/* --- Pillar tabs --- */
-.pillar-tabs {
-  display: flex;
-  gap: 4px;
-  padding: 10px 26px 0;
-  margin-top: 6px;
-  border-bottom: 1px solid var(--color-surface-2);
-}
-
-.pillar-tab {
-  border: none;
-  background: transparent;
-  font-family: var(--font-sans);
-  font-size: 12.5px;
-  font-weight: 700;
+.figure-sub {
+  font-size: 11.5px;
   color: var(--color-muted);
-  padding: 8px 12px;
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px; /* overlap the strip's bottom divider */
-  transition: color 0.12s;
+  margin-top: 8px;
 }
 
-.pillar-tab:hover {
-  color: var(--color-ink-strong);
-}
-
-.pillar-tab-active {
-  color: var(--color-copper);
-  border-bottom-color: var(--color-copper);
-}
-
-/* --- Two-pane browser --- */
-.browser {
+/* GPA reads "3.42 → 3.51": what you have, then what your planned grades make
+   it. One stat, not two competing tiles. */
+.gpa-line {
   display: flex;
+  align-items: baseline;
+  gap: 9px;
 }
 
-.rail {
-  flex: 0 0 210px;
-  padding: 16px 10px;
-  border-right: 1px solid var(--color-surface-2);
+.gpa-num {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 30px;
+  line-height: 1;
+  color: var(--color-ink);
 }
 
-.rail-eyebrow {
-  font-size: 10.5px;
-  font-weight: 700;
+.gpa-arrow {
+  font-size: 16px;
   color: var(--color-subtle);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  padding: 4px 10px 8px;
 }
 
-.rail-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 9px 10px;
-  border-radius: 8px;
-  cursor: pointer;
-  margin-bottom: 2px;
+/* The projected value is the accent — but the sub-line spells out which number
+   is which, so the colour is never the only thing telling them apart. */
+.gpa-num-proj {
+  color: var(--color-copper);
 }
 
-.rail-row:hover {
-  background: var(--color-surface-2);
+/* Masked GPA. Sits a step back in the ink ramp and tightens the dot spacing so
+   it reads as "withheld" rather than as a value in its own right. */
+.gpa-num-masked {
+  color: var(--color-subtle);
+  letter-spacing: 0.08em;
+  user-select: none;
 }
 
-.rail-name {
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--color-ink-strong);
-  flex: 1;
-  line-height: 1.28;
+/* First-run prompt under an all-empty spine. */
+.summary-empty {
+  margin: 16px 2px 0;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--color-muted);
+  max-width: 62ch;
 }
 
-.rail-pct {
-  font-size: 10.5px;
-  font-weight: 700;
+/* --- Subject browser --- */
+.browser {
+  border-top: 1px solid var(--color-surface-2);
 }
 
 .tree {
-  flex: 1;
-  padding: 12px 22px 30px;
+  padding: 6px 26px 30px;
   min-width: 0;
 }
 
-/* --- Category rows --- */
-.cat-row {
+/* Names the pillar the spine has focused, so the tree below always has a
+   heading (the spine label alone is easy to lose track of while scrolling). */
+.tree-head {
   display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 4px 10px;
+}
+
+.tree-head-name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--color-ink);
+}
+
+.tree-head-count {
+  font-size: 11.5px;
+  color: var(--color-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* The ✓ that carries "met" alongside the colour, for readers who can't tell
+   copper from olive. */
+.met-check {
+  color: var(--color-success);
+  font-weight: 800;
+}
+
+/* --- Category rows ---
+   A grid, not a flex row: the bar and credit columns then start at the same x
+   on every row regardless of how long the category name is, so a student can
+   run their eye straight down the bars. Tree depth indents .cat-label only. */
+.cat-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 42%) 66px;
   align-items: center;
-  gap: 11px;
+  gap: 12px;
   padding: 10px 4px;
   cursor: pointer;
   border-bottom: 1px solid var(--color-divider);
 }
 
+.cat-label {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+}
+
 .chevron {
+  flex: 0 0 auto;
   display: inline-block;
   width: 14px;
   color: var(--color-tan);
@@ -585,8 +852,10 @@ body {
   font-weight: 700;
   font-size: 13.5px;
   color: var(--color-ink);
-  flex: 0 0 auto;
-  max-width: 240px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Plan-dependent flag: sits after the category name on rows whose required
@@ -602,24 +871,32 @@ body {
   border-color: transparent;
 }
 
-/* Let the design-system ProgressBar shrink to fill the row (its default min
-   width is 120px). */
+/* Let the design-system ProgressBar shrink to fill its grid cell (its default
+   min width is 120px). */
 .cat-bar {
-  flex: 1;
   min-width: 0;
+  width: 100%;
 }
 
-/* Fills the bar's slot for "pick any" categories so the credit count stays right-aligned. */
+/* Holds the bar column open for "pick any" categories, which have no target. */
 .cat-bar-spacer {
-  flex: 1;
+  display: block;
 }
 
 .cat-earned {
   font-size: 11.5px;
   color: var(--color-muted);
-  width: 56px;
   text-align: right;
   font-variant-numeric: tabular-nums;
+}
+
+/* "+3" — credits underway in this category. Carries the same copper as the
+   band's leading edge in the bar beside it, so the number and the bar are
+   visibly the same fact stated twice, not two different ones. */
+.cat-underway {
+  margin-left: 4px;
+  color: var(--color-copper);
+  font-weight: 700;
 }
 
 /* --- Subject rows --- */
@@ -681,57 +958,51 @@ body {
     padding: 16px 16px 8px;
   }
 
-  /* Rings: drop the connector bars and space three equal, centered cells. The
-     inline flex on .ring-cell needs !important to override for the last one. */
-  .rings {
-    padding: 14px 8px 4px;
-  }
-  .rings .ring-cell {
-    flex: 1 !important;
-    justify-content: center;
-  }
-  .connector {
-    display: none;
-  }
-  .ring-name {
-    font-size: 11px;
-    max-width: 96px;
+  .summary {
+    padding: 4px 16px 20px;
   }
 
-  .gpa-strip {
-    margin: 12px 14px 4px;
-    padding: 12px 14px;
+  /* The plan toggle can't hang right on a narrow column — let it wrap onto its
+     own line with the others instead of being pushed off. */
+  .figures {
+    gap: 22px 28px;
+    margin-bottom: 18px;
   }
-  .gpa-stats {
-    gap: 18px;
+  .hero-num {
+    font-size: 46px;
   }
-
-  /* Tabs scroll sideways instead of overflowing the card. */
-  .pillar-tabs {
-    padding: 8px 12px 0;
-    overflow-x: auto;
-  }
-  .pillar-tab {
-    flex: 0 0 auto;
-    white-space: nowrap;
-    padding: 8px 10px;
+  .gpa-num {
+    font-size: 26px;
   }
 
-  /* Single column: the quick-nav rail is a desktop convenience — the tabs cover
-     it on mobile — so collapse it and let the tree use the full width. */
-  .rail {
-    display: none;
-  }
   .tree {
-    padding: 10px 14px 24px;
+    padding: 4px 16px 24px;
+  }
+  .tree-head {
+    padding: 14px 4px 8px;
   }
 
-  /* Let long category names truncate instead of forcing 240px. */
+  /* Narrow screens: give the name more of the row and shrink the bar column,
+     which still aligns because it's a grid track. */
+  .cat-row {
+    grid-template-columns: minmax(0, 1fr) 22% 50px;
+    gap: 8px;
+    align-items: center;
+  }
+
+  /* Names WRAP here rather than truncate. Ellipsis turned "General Education -
+     Required" and "General Education - Elective" into the same string, which
+     is worse than a two-line row. */
   .cat-name {
-    max-width: 150px;
-    flex: 0 1 auto;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    font-size: 12.5px;
+    white-space: normal;
+    overflow: visible;
+    line-height: 1.28;
+  }
+  .cat-label {
+    align-items: flex-start;
+  }
+  .chevron {
+    margin-top: 2px;
   }
 }

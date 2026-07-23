@@ -168,6 +168,9 @@ INSERT INTO subjects (code, name, is_title, credit, group_code, grade_type, plan
   ('954447', 'Client -Side Scripting', FALSE, 3, 2220, 'AF', NULL),
   ('954448', 'Web Service for Enterprise Systems', FALSE, 3, 2220, 'AF', NULL),
   ('954449', 'Rapid Application Development', FALSE, 3, 2220, 'AF', NULL),
+  -- Added after the original xlsx extraction: the source spreadsheet predates
+  -- this course, so it was missing and imports fell through to Free Electives.
+  ('954450', 'Lowcodization', FALSE, 3, 2220, 'AF', NULL),
   ('954461', 'Information Technology for Knowledge Creation', FALSE, 3, 2220, 'AF', NULL),
   ('954462', 'Knowledge Engineering and Information Technology Application', FALSE, 3, 2220, 'AF', NULL),
   ('954463', 'Information Technology for Learning Organization', FALSE, 3, 2220, 'AF', NULL),

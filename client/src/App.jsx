@@ -12,22 +12,25 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   Card,
-  ScoreRing,
-  SegmentedToggle,
+  CreditSpine,
   ProgressBar,
   Select,
   Badge,
   Banner,
 } from '@camt/ui';
 import { api } from './api';
+import { FREE_ELECTIVE_GROUP } from './catalog';
 import TranscriptImport from './TranscriptImport';
-import BackupMenu from './BackupMenu';
+import SettingsMenu from './SettingsMenu';
 import { useLang } from './LanguageContext';
-import { LANGS } from './i18n';
 
 // New enrollments default to this term (the redesign dropped the term picker;
 // term still gets recorded, it just isn't chosen in the UI).
 const DEFAULT_TERM = '1/1';
+
+// The catalog's placeholder free-elective slots (FREE-01 … FREE-07), carried
+// over from the spreadsheet as blank lines to write a course into by hand.
+const isFreeSlot = (code) => /^FREE-\d+$/.test(code);
 
 // Which grades are valid to record for a subject, mirroring the backend rule:
 // a subject with grade_type NULL accepts anything; a grade whose own type is
@@ -75,8 +78,17 @@ function GradeSelect({ subject, grades, value, disabled, onChange }) {
 }
 
 export default function App() {
-  const { t, tCat, lang, setLang } = useLang();
+  const { t, tCat } = useLang();
   const [plan, setPlan] = useState(() => localStorage.getItem('plan') || 'WIL');
+  // Privacy toggle: masks the GPA figures so the dashboard can be shown to
+  // someone without revealing them. Persisted, so it survives a reload — a
+  // privacy setting that silently resets isn't one.
+  const [gpaHidden, setGpaHidden] = useState(() => localStorage.getItem('gpaHidden') === '1');
+
+  function changeGpaHidden(hidden) {
+    setGpaHidden(hidden);
+    localStorage.setItem('gpaHidden', hidden ? '1' : '0');
+  }
 
   const [groups, setGroups] = useState([]);
   const [subjects, setSubjects] = useState([]);
@@ -162,9 +174,42 @@ export default function App() {
     return m;
   }, [subjects]);
 
-  const progOf = (code) => progressByCode.get(code) || { earned: 0, required: 0, met: false };
-  const pctOf = (earned, required) =>
-    required > 0 ? Math.min(100, (earned / required) * 100) : earned > 0 ? 100 : 0;
+  // Enrollments with no catalog entry, shaped like catalog subjects so the tree
+  // can render them with the same row. grade_type null = any grade is valid,
+  // which is right: we have no rule to apply to a course we don't know.
+  const offCatalogSubjects = useMemo(() => {
+    const known = new Set(subjects.map((s) => s.code));
+    return Object.values(enrollments)
+      .filter((e) => !known.has(e.subject_code))
+      .map((e) => ({
+        code: e.subject_code,
+        name: e.subject_name || e.subject_code,
+        credit: e.credit ?? 0,
+        group_code: FREE_ELECTIVE_GROUP,
+        grade_type: null,
+        is_title: false,
+        offCatalog: true,
+      }))
+      .sort((a, b) => a.code.localeCompare(b.code));
+  }, [enrollments, subjects]);
+
+  const progOf = (code) =>
+    progressByCode.get(code) || { earned: 0, required: 0, met: false, inProgress: 0 };
+
+  // Degree-level totals for the hero figure. Credits earned BEYOND a pillar's
+  // requirement don't shorten the degree (an extra free elective doesn't excuse
+  // a major course), so each pillar's contribution is capped at its own
+  // requirement — the same rule the spine draws.
+  const totals = useMemo(() => {
+    let required = 0;
+    let remaining = 0;
+    for (const g of topGroups) {
+      const p = progOf(g.code);
+      required += p.required || 0;
+      remaining += Math.max(0, (p.required || 0) - (p.earned || 0));
+    }
+    return { required, remaining, earned: required - remaining };
+  }, [topGroups, progressByCode]);
 
   function toggle(code) {
     setExpanded((e) => ({ ...e, [code]: !e[code] }));
@@ -199,7 +244,14 @@ export default function App() {
         if (existing) await api.deleteEnrollment(subject.code);
       } else {
         const term = existing ? existing.term : DEFAULT_TERM;
-        await api.saveEnrollment({ subject_code: subject.code, term, grade: newGrade });
+        // For an off-catalog course the credit and title exist only on the
+        // stored row, so pass them back or the save would drop them.
+        await api.saveEnrollment({
+          subject_code: subject.code,
+          term,
+          grade: newGrade,
+          ...(subject.offCatalog ? { credit: subject.credit, name: subject.name } : {}),
+        });
       }
       await refreshStudent(plan);
     } catch (e) {
@@ -215,10 +267,34 @@ export default function App() {
   const rows = useMemo(() => {
     if (selectedTop == null) return [];
     const out = [];
+
+    // Lists one group's course rows. Shared by BOTH the nested walk below and
+    // the leaf-pillar branch at the end — Free Electives is a top-level group
+    // with no children, so it only ever goes through that second path.
+    const pushSubjects = (groupCode, indent, visible) => {
+      for (const s of subjectsByGroup.get(groupCode) || []) {
+        // FREE-01..06 are blank slots from the original spreadsheet, there to
+        // be written into by hand. Imports now file off-catalog courses here
+        // automatically under their real names, so an empty slot is a row
+        // asking for input nobody needs to give. Kept only if one already
+        // holds a grade — hiding a filled slot would strand that data.
+        if (isFreeSlot(s.code) && !enrollments[s.code]) continue;
+        out.push({ kind: 'subject', visible, subject: s, indent });
+      }
+      // Courses the catalog doesn't know count toward Free Electives but have
+      // no catalog row, so they'd be credits in the bar with nothing to show
+      // for them. Build rows from what the import stored (real title + credit).
+      if (groupCode === FREE_ELECTIVE_GROUP) {
+        for (const s of offCatalogSubjects) {
+          out.push({ kind: 'subject', visible, subject: s, indent });
+        }
+      }
+    };
+
     const walk = (group, depth, parentVisible) => {
       const kids = childrenOf.get(group.code) || [];
       const isLeaf = kids.length === 0;
-      const { earned, required, met } = progOf(group.code);
+      const { earned, required, met, inProgress } = progOf(group.code);
       const isOpen = !!expanded[group.code];
       out.push({
         kind: 'group',
@@ -228,20 +304,12 @@ export default function App() {
         earned,
         required,
         met,
+        inProgress,
         isOpen,
         indent: depth * 18 + 4,
       });
       if (isLeaf) {
-        if (isOpen) {
-          for (const s of subjectsByGroup.get(group.code) || []) {
-            out.push({
-              kind: 'subject',
-              visible: parentVisible && isOpen,
-              subject: s,
-              indent: depth * 18 + 26,
-            });
-          }
-        }
+        if (isOpen) pushSubjects(group.code, depth * 18 + 26, parentVisible && isOpen);
       } else {
         for (const child of kids) walk(child, depth + 1, parentVisible && isOpen);
       }
@@ -254,28 +322,47 @@ export default function App() {
     if (top) {
       const kids = childrenOf.get(top.code) || [];
       if (kids.length === 0) {
-        for (const s of subjectsByGroup.get(top.code) || []) {
-          out.push({ kind: 'subject', visible: true, subject: s, indent: 4 });
-        }
+        pushSubjects(top.code, 4, true);
       } else {
         for (const child of kids) walk(child, 0, true);
       }
     }
     return out;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedTop, groups, childrenOf, subjectsByGroup, progressByCode, expanded]);
+  }, [
+    selectedTop,
+    groups,
+    childrenOf,
+    subjectsByGroup,
+    progressByCode,
+    expanded,
+    offCatalogSubjects,
+    enrollments,
+  ]);
 
   if (loading) return <div className="page"><p className="muted">{t('loading')}</p></div>;
 
   const fmt = (v) => (v == null ? '—' : v.toFixed(2));
   const selectedTopName = groups.find((g) => g.code === selectedTop)?.name || '';
-  const railItems = childrenOf.get(selectedTop) || [];
+  const selectedProg = progOf(selectedTop);
+
+  // GPA reads as "now → with your planned grades". The arrow only appears when
+  // there's actually a projection to show, so a student who hasn't entered any
+  // what-if grades just sees one number.
+  const primaryGpa = gpa.gpa_actual ?? gpa.gpa_projected;
+  const showProjection =
+    gpa.gpa_actual != null &&
+    gpa.gpa_projected != null &&
+    Math.abs(gpa.gpa_projected - gpa.gpa_actual) >= 0.005;
 
   return (
     <div className="page">
       <div className="shell">
         <Card padded={false} className="app-card">
-          {/* Header: logo + wordmark + WIL/IS toggle */}
+          {/* Header: brand, then Import as the one visible action. Plan,
+              language and backup all sit behind the gear in the far corner —
+              they're set once and then left alone, so they don't earn permanent
+              space next to the thing students come here to do. */}
           <div className="header">
             <div className="brand">
               {/* BASE_URL is '/' in dev and '/<repo>/' when built for a GitHub
@@ -284,117 +371,134 @@ export default function App() {
               <span className="wordmark">{t('app.title')}</span>
             </div>
             <div className="header-actions">
-              <SegmentedToggle
-                value={plan}
-                onChange={changePlan}
-                options={[
-                  { value: 'WIL', label: 'WIL' },
-                  { value: 'IS', label: 'IS' },
-                ]}
-              />
-              <SegmentedToggle value={lang} onChange={setLang} options={LANGS} />
               <TranscriptImport onImported={handleImported} />
-              <BackupMenu
+              <SettingsMenu
+                plan={plan}
+                onPlanChange={changePlan}
+                gpaHidden={gpaHidden}
+                onGpaHiddenChange={changeGpaHidden}
                 onRestored={() => window.location.reload()}
+                onReset={() => {
+                  api.resetData();
+                  window.location.reload();
+                }}
                 onError={(msg) => setError(msg)}
               />
             </div>
           </div>
 
-          {/* Score rings — one per top-level pillar, joined by connectors */}
-          <div className="rings">
-            {topGroups.map((g, i) => {
-              const { earned, required, met } = progOf(g.code);
-              const isLast = i === topGroups.length - 1;
-              return (
-                <div className="ring-cell" style={{ flex: isLast ? '0 0 auto' : 1 }} key={g.code}>
-                  <div className="ring-col" onClick={() => setSelectedTop(g.code)}>
-                    <ScoreRing
-                      percent={pctOf(earned, required)}
-                      met={met}
-                      selected={g.code === selectedTop}
-                      sublabel={`${earned}/${required}`}
-                    />
-                    <div className="ring-name">{tCat(g.code, g.name)}</div>
-                  </div>
-                  {!isLast && <div className="connector" />}
+          {/* Summary: the one number the page leads with, the GPA beside it, and
+              the credit spine — a single bar for the whole degree, split so each
+              pillar's WIDTH is its share of the 126 credits. */}
+          <div className="summary">
+            <div className="figures">
+              <div className="figure">
+                <div className="eyebrow">{t('hero.remaining')}</div>
+                <div className="hero-num">{totals.remaining}</div>
+                <div className="figure-sub">
+                  {totals.remaining === 0
+                    ? t('hero.done')
+                    : t('hero.sub', { total: totals.required, earned: totals.earned })}
                 </div>
-              );
-            })}
-          </div>
-
-          {/* GPA strip */}
-          <div className="gpa-strip">
-            <div className="gpa-stats">
-              <div>
-                <div className="gpa-value">{fmt(gpa.gpa_actual)}</div>
-                <div className="gpa-cap">{t('gpa.actual')} · {gpa.credits_actual} {t('unit.cr')}</div>
               </div>
-              <div>
-                <div className="gpa-value">{fmt(gpa.gpa_projected)}</div>
-                <div className="gpa-cap">{t('gpa.projected')} · {gpa.credits_projected} {t('unit.cr')}</div>
+
+              <div className="figure">
+                <div className="eyebrow">{t('gpa.label')}</div>
+                {/* Hidden GPA masks the numbers only — the credit counts, bars
+                    and tree stay as they are, so the page still shows how far
+                    along you are, just not how well. */}
+                {gpaHidden ? (
+                  <>
+                    <div className="gpa-line">
+                      <span className="gpa-num gpa-num-masked" aria-label={t('gpa.hidden')}>
+                        ••••
+                      </span>
+                    </div>
+                    <div className="figure-sub">{t('gpa.hidden')}</div>
+                  </>
+                ) : (
+                  <>
+                    <div className="gpa-line">
+                      <span className="gpa-num">{fmt(primaryGpa)}</span>
+                      {showProjection && (
+                        <>
+                          <span className="gpa-arrow" aria-hidden="true">
+                            →
+                          </span>
+                          <span className="gpa-num gpa-num-proj">{fmt(gpa.gpa_projected)}</span>
+                        </>
+                      )}
+                    </div>
+                    <div className="figure-sub">
+                      {showProjection
+                        ? t('gpa.sub.planned')
+                        : t('gpa.sub.actual', { n: gpa.credits_actual ?? 0 })}
+                    </div>
+                  </>
+                )}
               </div>
             </div>
-          </div>
 
-          {/* Pillar tabs — switch which top-level requirement is focused below.
-              (Clicking a ring above does the same thing.) */}
-          <div className="pillar-tabs">
-            {topGroups.map((g) => (
-              <button
-                key={g.code}
-                type="button"
-                className={`pillar-tab${g.code === selectedTop ? ' pillar-tab-active' : ''}`}
-                onClick={() => setSelectedTop(g.code)}
-              >
-                {tCat(g.code, g.name)}
-              </button>
-            ))}
-          </div>
-
-          {/* Two-pane category browser */}
-          <div className="browser">
-            <div className="rail">
-              <div className="rail-eyebrow">{tCat(selectedTop, selectedTopName)}</div>
-              {railItems.map((g) => {
-                const { earned, required, met } = progOf(g.code);
-                return (
-                  <div className="rail-row" key={g.code} onClick={() => toggle(g.code)}>
-                    <span className="rail-name">{tCat(g.code, g.name)}</span>
-                    <span
-                      className="rail-pct"
-                      style={{ color: met ? 'var(--color-success)' : 'var(--color-copper)' }}
-                    >
-                      {required > 0 ? `${Math.round(pctOf(earned, required))}%` : '—'}
-                    </span>
-                  </div>
-                );
+            <CreditSpine
+              className="degree-spine"
+              segments={topGroups.map((g) => {
+                const { earned, required, met, inProgress } = progOf(g.code);
+                return {
+                  key: g.code,
+                  label: tCat(g.code, g.name),
+                  value: earned,
+                  max: required,
+                  met,
+                  inProgress,
+                };
               })}
-            </div>
+              selected={selectedTop}
+              onSelect={setSelectedTop}
+              segmentLabel={(seg) =>
+                `${seg.label}: ${seg.value}/${seg.max} ${t('unit.cr')}` +
+                (seg.inProgress > 0
+                  ? `, ${seg.inProgress} ${t('unit.cr')} ${t('gpa.inprogress')}`
+                  : '') +
+                (seg.met ? ' ✓' : '')
+              }
+            />
 
+            {/* An empty dashboard should say what to do next, not just sit at
+                zero. Names both ways in, in the order most students want them. */}
+            {totals.earned === 0 && <p className="summary-empty">{t('empty.hint')}</p>}
+          </div>
+
+          {/* The subject browser for whichever pillar the spine has focused. */}
+          <div className="browser">
             <div className="tree">
+              <div className="tree-head">
+                <span className="tree-head-name">{tCat(selectedTop, selectedTopName)}</span>
+                <span className="tree-head-count">
+                  {selectedProg.earned}/{selectedProg.required} {t('unit.cr')}
+                  {selectedProg.met && <span className="met-check"> ✓</span>}
+                </span>
+              </div>
               {rows.map((row, idx) => {
                 if (!row.visible) return null;
                 if (row.kind === 'group') {
                   return (
-                    <div
-                      className="cat-row"
-                      key={`g-${row.code}`}
-                      onClick={() => toggle(row.code)}
-                      style={{ paddingLeft: row.indent }}
-                    >
-                      <span
-                        className="chevron"
-                        style={{ transform: row.isOpen ? 'rotate(90deg)' : 'rotate(0deg)' }}
-                      >
-                        ▶
+                    <div className="cat-row" key={`g-${row.code}`} onClick={() => toggle(row.code)}>
+                      {/* Depth indents the label only, so the bars and counts
+                          stay in fixed columns and can be scanned down. */}
+                      <span className="cat-label" style={{ paddingLeft: row.indent }}>
+                        <span
+                          className="chevron"
+                          style={{ transform: row.isOpen ? 'rotate(90deg)' : 'rotate(0deg)' }}
+                        >
+                          ▶
+                        </span>
+                        <span className="cat-name">{tCat(row.code, row.name)}</span>
+                        {planVaries.has(row.code) && (
+                          <Badge variant="pill" className="plan-badge" title={t('plan.varies')}>
+                            {plan}
+                          </Badge>
+                        )}
                       </span>
-                      <span className="cat-name">{tCat(row.code, row.name)}</span>
-                      {planVaries.has(row.code) && (
-                        <Badge variant="pill" className="plan-badge" title={t('plan.varies')}>
-                          {plan}
-                        </Badge>
-                      )}
                       {row.required > 0 ? (
                         // Fixed-requirement category: show the progress bar.
                         <ProgressBar
@@ -405,6 +509,7 @@ export default function App() {
                           value={row.earned}
                           max={row.required}
                           met={row.met}
+                          inProgress={row.inProgress}
                         />
                       ) : (
                         // "Pick any" category (no required count) — no bar, just
@@ -417,6 +522,25 @@ export default function App() {
                           : row.earned > 0
                             ? `${row.earned} ${t('unit.cr')}`
                             : '—'}
+                        {/* Credits underway, stated rather than left to the bar
+                            alone — this is the number a student checks when
+                            asking "am I on track this term?". */}
+                        {row.inProgress > 0 && (
+                          <span
+                            className="cat-underway"
+                            title={`${row.inProgress} ${t('unit.cr')} ${t('gpa.inprogress')}`}
+                          >
+                            +{row.inProgress}
+                          </span>
+                        )}
+                        {/* Copper and olive are near-identical under red-green
+                            colour blindness, so "met" never rides on hue alone. */}
+                        {row.met && row.required > 0 && (
+                          <span className="met-check" title={t('status.met')}>
+                            {' '}
+                            ✓
+                          </span>
+                        )}
                       </span>
                     </div>
                   );
@@ -428,7 +552,7 @@ export default function App() {
                     <span className="subj-code">{s.code}</span>
                     <span className="subj-name">{s.name}</span>
                     <Badge variant="pill" className="subj-chip">
-                      {s.credit}
+                      {s.credit} {t('unit.cr')}
                     </Badge>
                     <GradeSelect
                       subject={s}
