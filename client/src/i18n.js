@@ -73,7 +73,9 @@ const STRINGS = {
 
     // Where-to-copy guide
     'guide.title': 'How to copy your courses',
-    'guide.step1': 'Open your schedule or grades on',
+    'guide.step1': 'Open the page you want to copy from:',
+    'guide.linkGrades': 'Grades ↗',
+    'guide.linkSchedule': 'Class schedule ↗',
     'guide.step2': 'Drag across the course rows. Headers and the total line are fine to include.',
     'guide.step3': 'Copy with Ctrl/⌘+C, then paste in the box above.',
     'guide.colCode': 'Course no',
@@ -153,7 +155,9 @@ const STRINGS = {
 
     // Where-to-copy guide
     'guide.title': 'วิธีคัดลอกรายวิชา',
-    'guide.step1': 'เปิดตารางเรียนหรือเกรดที่',
+    'guide.step1': 'เปิดหน้าที่ต้องการคัดลอก:',
+    'guide.linkGrades': 'ผลการเรียน ↗',
+    'guide.linkSchedule': 'ตารางเรียน ↗',
     'guide.step2': 'ลากคลุมแถวรายวิชา จะติดหัวตารางหรือบรรทัดรวมมาด้วยก็ได้',
     'guide.step3': 'กด Ctrl/⌘+C เพื่อคัดลอก แล้ววางในช่องด้านบน',
     'guide.colCode': 'รหัสวิชา',
