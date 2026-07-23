@@ -78,7 +78,7 @@ function GradeSelect({ subject, grades, value, disabled, onChange }) {
 }
 
 export default function App() {
-  const { t, tCat } = useLang();
+  const { t, tCat, tCatShort } = useLang();
   const [plan, setPlan] = useState(() => localStorage.getItem('plan') || 'WIL');
   // Privacy toggle: masks the GPA figures so the dashboard can be shown to
   // someone without revealing them. Persisted, so it survives a reload — a
@@ -446,6 +446,7 @@ export default function App() {
                 return {
                   key: g.code,
                   label: tCat(g.code, g.name),
+                  shortLabel: tCatShort(g.code, g.name),
                   value: earned,
                   max: required,
                   met,
