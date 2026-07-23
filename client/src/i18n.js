@@ -221,3 +221,18 @@ export function categoryName(lang, code, englishName) {
   if (lang === 'th') return categoryNamesTh[code] || englishName;
   return englishName;
 }
+
+// Short forms for the three top-level pillars, used where a full name can't
+// fit — currently the credit spine on phones, where each segment is ~54px wide
+// and "Field of Specialization" would wrap past the point of being readable.
+// Only these three exist; anything else falls back to its full name, so a
+// caller can ask for a short label unconditionally.
+const categoryShort = {
+  en: { 1000: 'GE', 2000: 'FS', 9000: 'Free' },
+  th: { 1000: 'GE', 2000: 'วิชาเฉพาะ', 9000: 'เสรี' },
+};
+
+export function categoryShortName(lang, code, englishName) {
+  const table = categoryShort[lang] || categoryShort.en;
+  return table[code] || categoryName(lang, code, englishName);
+}

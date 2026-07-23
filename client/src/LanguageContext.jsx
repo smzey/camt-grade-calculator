@@ -3,7 +3,7 @@
 // persisted in localStorage ('lang') so it sticks across visits, same as 'plan'.
 
 import { createContext, useContext, useMemo, useState } from 'react';
-import { makeT, categoryName } from './i18n';
+import { makeT, categoryName, categoryShortName } from './i18n';
 
 const LangCtx = createContext(null);
 
@@ -17,6 +17,8 @@ export function LanguageProvider({ children }) {
       t,
       // Category/group name in the current language (English fallback).
       tCat: (code, englishName) => categoryName(lang, code, englishName),
+      // Abbreviated form for tight layouts; falls back to the full name.
+      tCatShort: (code, englishName) => categoryShortName(lang, code, englishName),
       setLang: (l) => {
         localStorage.setItem('lang', l);
         setLangState(l);

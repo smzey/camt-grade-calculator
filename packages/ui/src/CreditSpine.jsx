@@ -16,7 +16,9 @@
 // so "met" ALSO carries a ✓ glyph. Never rely on the color alone.
 //
 // Props:
-//   segments  Array<{ key, label, value, max, met, inProgress }>
+//   segments  Array<{ key, label, shortLabel, value, max, met, inProgress }>
+//             shortLabel is optional; where given it replaces the label at the
+//             narrow breakpoint, chosen in CSS rather than JS.
 //             inProgress = credits currently being studied. Drawn as a lighter
 //             band continuing past the earned fill, so "underway" is visibly
 //             distinct from "done" and never counts toward met.
@@ -136,9 +138,18 @@ export function CreditSpine({
             className={`camt-spine-label${seg.key === selected ? ' is-selected' : ''}`}
             style={{ flexGrow: seg.max || 1, flexBasis: 0, minWidth: MIN_SEGMENT_PX }}
           >
+            {/* Both forms are rendered and CSS picks one per breakpoint, so a
+                rotate or resize needs no JS and can't leave a stale label. The
+                hidden one is aria-hidden, or a screen reader would read the
+                name twice. */}
             <span className="camt-spine-label-name" title={seg.label}>
               {seg.label}
             </span>
+            {seg.shortLabel && seg.shortLabel !== seg.label && (
+              <span className="camt-spine-label-short" title={seg.label} aria-hidden="true">
+                {seg.shortLabel}
+              </span>
+            )}
             <span className="camt-spine-label-num">{seg.max}</span>
           </div>
         ))}

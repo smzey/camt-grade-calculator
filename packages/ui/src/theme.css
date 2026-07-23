@@ -221,6 +221,12 @@
     font-weight: 600;
   }
 
+  /* The abbreviated label only exists at the narrow breakpoint. */
+  .camt-spine-label-short {
+    display: none;
+    font-weight: 600;
+  }
+
   .camt-spine-label.is-selected .camt-spine-label-name {
     font-weight: 700;
   }
@@ -261,15 +267,22 @@
       gap: 2px;
     }
 
+    /* Swap to the abbreviation. At 54px a wrapped "Field of Specialization"
+       cost three lines and still truncated, which pushed the tree off the
+       first screen for no gain — the segment's position and the credit count
+       beside it already identify it. */
     .camt-spine-label-name {
-      font-size: 9.5px;
+      display: none;
+    }
+
+    .camt-spine-label-short {
+      display: block;
+      font-size: 10.5px;
       line-height: 1.25;
-      /* Two lines then ellipsis: a wrapped name beats a truncated one, but a
-         four-line name would push the tree off the first screen. */
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
       overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 100%;
     }
 
     .camt-spine-label-num {
