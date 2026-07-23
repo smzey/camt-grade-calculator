@@ -8,6 +8,7 @@
 import { useEffect, useState } from 'react';
 import { Banner, Badge } from '@camt/ui';
 import { api } from './api';
+import { IMPORTABLE } from './engine';
 import { useLang } from './LanguageContext';
 
 export default function TranscriptImport({ onImported }) {
@@ -56,9 +57,17 @@ export default function TranscriptImport({ onImported }) {
     setBusy(true);
     setError(null);
     try {
+      // 'ok' plus the two non-error states (free elective / currently studying).
+      // credit rides along because an off-catalog subject has no credit to look up.
       const rows = preview.rows
-        .filter((r) => r.status === 'ok')
-        .map((r) => ({ subject_code: r.subject_code, term: r.term, grade: r.grade }));
+        .filter((r) => IMPORTABLE.has(r.status))
+        .map((r) => ({
+          subject_code: r.subject_code,
+          term: r.term,
+          grade: r.grade,
+          credit: r.credit,
+          name: r.subject_name,
+        }));
       const res = await api.commitImport(rows);
       close();
       onImported?.(res.imported); // refresh the dashboard
@@ -70,8 +79,30 @@ export default function TranscriptImport({ onImported }) {
 
   return (
     <>
-      <button type="button" className="import-btn" onClick={() => setOpen(true)}>
-        {t('action.import')}
+      {/* Icon-only, so the label moves to aria-label/title — without it the
+          button is unnamed to a screen reader and unexplained on hover. */}
+      <button
+        type="button"
+        className="import-btn"
+        aria-label={t('action.import')}
+        title={t('action.import')}
+        onClick={() => setOpen(true)}
+      >
+        {/* A bare up arrow — the plain "bring data in" mark. No tray: that shape
+            belongs to backup restore, where the source is a file. */}
+        <svg
+          className="import-icon"
+          width="15"
+          height="15"
+          viewBox="0 0 16 16"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <g stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" fill="none">
+            <path d="M8 13.2V3.4" />
+            <path d="M4.2 7.2 8 3.4l3.8 3.8" />
+          </g>
+        </svg>
       </button>
 
       {open && (
@@ -84,12 +115,18 @@ export default function TranscriptImport({ onImported }) {
               </button>
             </div>
 
+            {/* One scroll region. The header and the action bar are pinned, so
+                Import is reachable no matter how long the preview runs. */}
+            <div className="modal-body">
             {error && <Banner tone="error">{error}</Banner>}
 
             <p className="modal-hint">{t('import.hint')}</p>
 
             <textarea
-              className="paste-box"
+              // Once there's a preview the paste box has done its job, so it
+              // gives its height to the thing you're actually reading. Focus
+              // brings it back if you need to correct the paste.
+              className={`paste-box${preview ? ' paste-box-compact' : ''}`}
               value={text}
               onChange={(e) => setText(e.target.value)}
               placeholder={t('import.placeholder')}
@@ -141,8 +178,16 @@ export default function TranscriptImport({ onImported }) {
                 </div>
               </>
             )}
+            </div>
 
             <div className="modal-actions">
+              {/* Restates what's about to happen at the point of decision, so
+                  you don't have to scroll back up to the summary to check. */}
+              {preview && preview.summary.ok > 0 && (
+                <span className="modal-actions-note">
+                  {t('import.ready', { ok: preview.summary.ok, total: preview.summary.total })}
+                </span>
+              )}
               <button type="button" className="btn-ghost" onClick={close}>
                 {t('action.cancel')}
               </button>

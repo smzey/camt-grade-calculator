@@ -10,7 +10,7 @@
 
 import * as catalog from './catalog';
 import * as store from './store';
-import { computeGpa, computeProgress, buildPreview } from './engine';
+import { computeGpa, computeProgress, buildPreview, IMPORTABLE } from './engine';
 import { parseTranscript } from './transcriptParser';
 
 export const api = {
@@ -33,11 +33,15 @@ export const api = {
 
   // Record/replace one grade. Validate with the same rule the server used, so an
   // invalid combination surfaces the same error message in the UI banner.
-  saveEnrollment: async ({ subject_code, term, grade }) => {
+  // credit/name are only meaningful for a course the catalog doesn't know: they
+  // came from the pasted document and live on the row. They MUST be passed back
+  // on every save, or changing the grade of a free elective silently erases its
+  // title and credit.
+  saveEnrollment: async ({ subject_code, term, grade, credit, name }) => {
     if (!subject_code || !term || !grade) throw new Error('subject_code, term and grade are required');
     const { status, message } = catalog.classifyRow({ subject_code, grade });
-    if (status !== 'ok') throw new Error(message);
-    return store.upsert({ subject_code, term, grade });
+    if (!IMPORTABLE.has(status)) throw new Error(message);
+    return store.upsert({ subject_code, term, grade, credit, name });
   },
 
   deleteEnrollment: async (subjectCode) => ({ deleted: store.remove(subjectCode) }),
@@ -58,11 +62,12 @@ export const api = {
     if (!Array.isArray(enrollments) || enrollments.length === 0) {
       throw new Error('Nothing to import.');
     }
-    // Re-validate every row (the UI only sends 'ok' rows, but never trust that).
+    // Re-validate every row (the UI only sends importable rows, but never trust
+    // that). Grade may legitimately be absent — that's an in-progress course.
     for (const e of enrollments) {
-      if (!e || !e.subject_code || !e.term || !e.grade) throw new Error('A row is missing subject/term/grade.');
+      if (!e || !e.subject_code || !e.term) throw new Error('A row is missing subject/term.');
       const { status, message } = catalog.classifyRow(e);
-      if (status !== 'ok') throw new Error(message);
+      if (!IMPORTABLE.has(status)) throw new Error(message);
     }
     return { imported: store.upsertMany(enrollments) };
   },
@@ -70,4 +75,7 @@ export const api = {
   // --- Backup / restore (new; only possible because data is local) ---
   exportData: () => store.exportData(),
   importData: (data) => store.importData(data),
+
+  // Delete every recorded grade. Irreversible — there's no server copy.
+  resetData: () => ({ cleared: store.clearAll() }),
 };

@@ -15,6 +15,13 @@ const STRINGS = {
     'action.export': '⬇ Export',
     'action.restore': '⤒ Restore',
     'backup.more': 'Backup & more',
+    'settings.open': 'Settings',
+    'lang.label': 'Language',
+    'reset.label': 'Reset data',
+    'reset.sub': 'Delete every grade in this browser',
+    'reset.confirm': 'Delete every grade saved in this browser? This cannot be undone — export a backup first if you want to keep them.',
+    'reset.cancel': 'Cancel',
+    'reset.go': 'Delete',
     'backup.export.label': 'Export backup',
     'backup.export.sub': 'Download your grades as JSON',
     'backup.restore.label': 'Restore backup',
@@ -25,6 +32,23 @@ const STRINGS = {
     'unit.cr': 'cr',
     'gpa.actual': 'GPA actual',
     'gpa.projected': 'GPA projected',
+    'gpa.inprogress': 'In progress',
+
+    // Degree summary
+    'hero.remaining': 'Still to earn',
+    'hero.sub': 'of {total} credits · {earned} earned',
+    'hero.done': 'Every requirement met',
+    'gpa.label': 'GPA',
+    'gpa.show': 'Show',
+    'gpa.hide': 'Hide',
+    'gpa.hidden': 'Hidden',
+    'gpa.sub.planned': 'now → with planned grades',
+    'gpa.sub.actual': 'from {n} credits',
+    'plan.label': 'Plan',
+    'status.met': 'Requirement met',
+    'empty.hint':
+      'Nothing recorded yet. Import your transcript, or open a category below to add grades one at a time.',
+
     'grade.group': 'Grade',
     'grade.planned': 'Planned (what-if)',
     'plan.varies': 'This requirement changes with the WIL/IS plan',
@@ -58,6 +82,8 @@ const STRINGS = {
 
     // Row status labels
     'status.unmatched_subject': 'not in catalog',
+    'status.in_progress': 'currently studying',
+    'status.free_elective': 'free elective',
     'status.unknown_grade': 'unknown grade',
     'status.grade_type_mismatch': 'grade not allowed',
     'status.title_row': 'section header',
@@ -68,6 +94,13 @@ const STRINGS = {
     'action.export': '⬇ ส่งออก',
     'action.restore': '⤒ กู้คืน',
     'backup.more': 'สำรองข้อมูลและอื่นๆ',
+    'settings.open': 'ตั้งค่า',
+    'lang.label': 'ภาษา',
+    'reset.label': 'ล้างข้อมูล',
+    'reset.sub': 'ลบเกรดทั้งหมดในเบราว์เซอร์นี้',
+    'reset.confirm': 'ลบเกรดทั้งหมดที่บันทึกไว้ในเบราว์เซอร์นี้? การกระทำนี้ย้อนกลับไม่ได้ — หากต้องการเก็บไว้ ให้ส่งออกข้อมูลสำรองก่อน',
+    'reset.cancel': 'ยกเลิก',
+    'reset.go': 'ลบ',
     'backup.export.label': 'ส่งออกข้อมูลสำรอง',
     'backup.export.sub': 'ดาวน์โหลดเกรดของคุณเป็นไฟล์ JSON',
     'backup.restore.label': 'กู้คืนข้อมูลสำรอง',
@@ -78,6 +111,23 @@ const STRINGS = {
     'unit.cr': 'หน่วยกิต',
     'gpa.actual': 'เกรดเฉลี่ยจริง',
     'gpa.projected': 'เกรดเฉลี่ยคาดการณ์',
+    'gpa.inprogress': 'กำลังเรียน',
+
+    // Degree summary
+    'hero.remaining': 'เหลืออีก',
+    'hero.sub': 'จาก {total} หน่วยกิต · ผ่านแล้ว {earned}',
+    'hero.done': 'ครบทุกหมวดแล้ว',
+    'gpa.label': 'เกรดเฉลี่ย',
+    'gpa.show': 'แสดง',
+    'gpa.hide': 'ซ่อน',
+    'gpa.hidden': 'ซ่อนอยู่',
+    'gpa.sub.planned': 'ปัจจุบัน → รวมเกรดที่วางแผน',
+    'gpa.sub.actual': 'จาก {n} หน่วยกิต',
+    'plan.label': 'แผนการเรียน',
+    'status.met': 'ครบตามเกณฑ์แล้ว',
+    'empty.hint':
+      'ยังไม่มีข้อมูล นำเข้าผลการเรียน หรือเปิดหมวดด้านล่างเพื่อกรอกเกรดทีละวิชา',
+
     'grade.group': 'เกรด',
     'grade.planned': 'เกรดที่วางแผน',
     'plan.varies': 'หน่วยกิตที่ต้องการเปลี่ยนตามแผน WIL/IS',
@@ -110,6 +160,8 @@ const STRINGS = {
 
     // Row status labels
     'status.unmatched_subject': 'ไม่มีในหลักสูตร',
+    'status.in_progress': 'กำลังเรียน',
+    'status.free_elective': 'วิชาเลือกเสรี',
     'status.unknown_grade': 'เกรดไม่รู้จัก',
     'status.grade_type_mismatch': 'เกรดไม่ถูกต้อง',
     'status.title_row': 'หัวข้อหมวด',

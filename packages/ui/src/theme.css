@@ -51,7 +51,12 @@
   --color-success: #5f8a52; /* met / positive (olive) */
   --color-tan: #b08a63; /* chevrons / soft accents */
   --color-track: #eadfd0; /* progress-bar track */
-  --color-ring-track: #e9dcc9; /* score-ring track / connectors */
+  /* Credits underway (enrolled, ungraded). A wash of copper over the track, so
+     it reads as "copper that hasn't arrived yet" rather than a fourth material.
+     Sits well clear of both neighbours in lightness, which is what carries the
+     distinction — hue alone would not survive deuteranopia. */
+  --color-underway: #d5aa93;
+  --color-ring-track: #e9dcc9; /* score-ring track */
   --color-gpa-from: #f3c9a4; /* GPA strip gradient start */
   --color-gpa-to: #d98a5e; /* GPA strip gradient end */
 
@@ -75,4 +80,250 @@
   /* --- Elevation --- */
   --shadow-sm: 0 1px 3px rgb(0 0 0 / 0.05);
   --shadow-card: 0 10px 34px rgb(70 50 30 / 0.09); /* the redesign's raised card -> shadow-card */
+}
+
+/* --- CreditSpine ------------------------------------------------------------
+ * Structural styles for the proportional meter. These live here (not in the
+ * app's stylesheet) because the component is part of the library; the widths
+ * come from inline flex-grow, everything else is here. */
+@layer components {
+  .camt-spine-seg {
+    position: relative;
+    display: block;
+    padding: 0 0 7px;
+    border: none;
+    background: none;
+    border-radius: var(--radius-lg);
+  }
+
+  /* Only interactive spines get the pointer. */
+  button.camt-spine-seg {
+    cursor: pointer;
+  }
+
+  /* Selection reads as a tab indicator UNDER the bar rather than a ring around
+     it: an inset ring paints beneath the fill, so it vanishes the moment a
+     segment is complete — exactly when you most need to see it. */
+  .camt-spine-seg::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 3px;
+    border-radius: 2px;
+    background: transparent;
+    transition: background 0.15s ease;
+  }
+
+  .camt-spine-seg.is-selected::after {
+    background: var(--color-ink);
+  }
+
+  button.camt-spine-seg:hover::after {
+    background: var(--color-border-strong);
+  }
+
+  button.camt-spine-seg.is-selected:hover::after {
+    background: var(--color-ink);
+  }
+
+  .camt-spine-track {
+    position: relative;
+    display: block;
+    height: 38px;
+    border-radius: var(--radius-lg);
+    background: var(--color-track); /* lighter step of the same warm ramp */
+    overflow: hidden;
+    transition: box-shadow 0.15s ease;
+  }
+
+  /* No radius of its own: the track is already rounded and clips its children.
+     Giving the fill a radius too rounds its trailing edge, which pinches
+     visibly where the underway band meets it. Square here, clipped there. */
+  .camt-spine-fill {
+    display: block;
+    height: 100%;
+    transition: width 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Credits underway — continues from where the earned fill stops, in the
+     lighter copper wash. The leading edge is a hard copper rule: it marks the
+     boundary between earned and enrolled, which is the one number a student is
+     actually tracking. That rule is the only ornament here; the band itself
+     stays flat so a row of segments doesn't shimmer. */
+  .camt-underway {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    background-color: var(--color-underway);
+    /* A sparse pinstripe, not a hatch: 1.5px every 9px. It has to read as
+       "underway" on its own — a category with nothing earned yet shows this
+       band with no copper fill beside it to compare against, and a flat wash
+       there just looks like a faded fill. Low frequency so a row of segments
+       doesn't shimmer. */
+    background-image: repeating-linear-gradient(
+      45deg,
+      rgb(179 83 47 / 0.22) 0 1.5px,
+      transparent 1.5px 9px
+    );
+    border-inline-start: var(--underway-edge, 2px) solid var(--color-copper);
+    transition:
+      width 0.55s cubic-bezier(0.4, 0, 0.2, 1),
+      inset-inline-start 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* "Met" glyph — the non-color half of the met signal. White on the olive
+     fill, which clears contrast at this size. */
+  .camt-spine-check {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  .camt-spine-seg:focus-visible {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 3px;
+  }
+
+  /* Direct labels under each segment. A narrow segment's label is allowed to
+     spill past its column rather than truncate — the neighbouring column is
+     mostly empty space, and a readable name matters more than a label box that
+     lines up exactly. The last one spills leftward so it can't leave the card. */
+  .camt-spine-label {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+    min-width: 0;
+    padding: 9px 2px 0;
+    font-family: var(--font-sans);
+    font-size: 11.5px;
+    color: var(--color-muted);
+    white-space: nowrap;
+    overflow: visible;
+  }
+
+  .camt-spine-label:last-child {
+    justify-content: flex-end;
+  }
+
+  .camt-spine-label.is-selected {
+    color: var(--color-ink);
+  }
+
+  .camt-spine-label-name {
+    font-weight: 600;
+  }
+
+  .camt-spine-label.is-selected .camt-spine-label-name {
+    font-weight: 700;
+  }
+
+  /* The credit count stays exact even when the segment width is floored. */
+  .camt-spine-label-num {
+    flex: 0 0 auto;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-subtle);
+  }
+
+  /* Phones: the smallest requirement can't hold a label beside a 15:1 bigger
+     one, so the spine turns vertical — proportion moves to height, where
+     there's room to spare. */
+  @media (max-width: 640px) {
+    .camt-spine {
+      display: flex;
+      gap: 12px;
+    }
+    .camt-spine > div:first-child {
+      flex-direction: column;
+      gap: 4px;
+      flex: 0 0 40px;
+      min-height: 230px;
+    }
+    .camt-spine > div:last-child {
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+      min-height: 230px;
+      min-width: 0;
+    }
+    .camt-spine-track {
+      height: 100%;
+    }
+
+    /* The horizontal floor is a WIDTH, which in a column flex container would
+       apply to the cross axis and blow the bar column open. Swap it for a
+       height floor so the smallest band stays tappable. */
+    .camt-spine-seg,
+    .camt-spine-label {
+      min-width: 0 !important;
+      min-height: 40px;
+    }
+
+    .camt-spine-seg {
+      padding: 0 0 0 7px;
+    }
+    /* Selection marker moves to the leading edge when the spine is vertical. */
+    .camt-spine-seg::after {
+      left: 0;
+      right: auto;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      height: auto;
+    }
+
+    /* Fills top-down, matching the left-to-right fill of the horizontal spine. */
+    .camt-spine-fill {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      width: 100% !important;
+      height: var(--fill-pct, 0%);
+      transition: height 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    /* Same swap for the underway band: it stacks BELOW the earned fill instead
+       of to its right, so --fill-start becomes a top offset and the boundary
+       rule moves from the leading edge to the top edge. */
+    .camt-spine .camt-underway {
+      left: 0;
+      right: 0;
+      inset-inline-start: auto !important;
+      width: 100% !important;
+      top: var(--fill-start, 0%);
+      height: var(--fill-pct, 0%);
+      border-inline-start: 0;
+      border-block-start: 2px solid var(--color-copper);
+      transition:
+        height 0.55s cubic-bezier(0.4, 0, 0.2, 1),
+        top 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .camt-spine-label {
+      align-items: center;
+      padding: 0 2px;
+      white-space: normal;
+    }
+    /* Vertical labels have a full column to themselves — no need to spill. */
+    .camt-spine-label:last-child {
+      justify-content: flex-start;
+    }
+  }
+}
+
+/* Motion is an enhancement, never the only way state is communicated. */
+@media (prefers-reduced-motion: reduce) {
+  .camt-spine-fill,
+  .camt-underway,
+  .camt-spine-track {
+    transition: none !important;
+    transition-delay: 0ms !important;
+  }
 }

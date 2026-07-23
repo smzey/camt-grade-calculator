@@ -51,8 +51,8 @@ export function listEnrollments() {
       const g = gradeMap.get(e.grade) || {};
       return {
         subject_code: e.subject_code,
-        subject_name: s.name ?? null,
-        credit: s.credit ?? null,
+        subject_name: s.name ?? e.name ?? null,
+        credit: s.credit ?? e.credit ?? null,
         group_code: s.group_code ?? null,
         term: e.term,
         grade: e.grade,
@@ -64,10 +64,26 @@ export function listEnrollments() {
     .sort(byTerm);
 }
 
+// Build the stored shape for one row. An empty grade is normalised to null —
+// that's the "currently studying" state. A subject the catalog doesn't know
+// keeps its own credit, since there's nothing to look it up from later.
+function toRow({ subject_code, term, grade, credit, name }) {
+  const g = grade == null || grade === '' ? null : grade;
+  const row = { subject_code, term, grade: g };
+  if (!subjectMap.has(subject_code)) {
+    // Off-catalog course: the credit and the title came from the pasted
+    // document and exist nowhere else, so they ride along on the row itself.
+    const c = Number(credit);
+    if (Number.isFinite(c) && c > 0) row.credit = c;
+    if (name) row.name = String(name);
+  }
+  return row;
+}
+
 // Upsert one enrollment (insert or overwrite by subject_code).
-export function upsert({ subject_code, term, grade }) {
+export function upsert({ subject_code, term, grade, credit, name }) {
   const map = readMap();
-  map[subject_code] = { subject_code, term, grade };
+  map[subject_code] = toRow({ subject_code, term, grade, credit, name });
   writeMap(map);
   return map[subject_code];
 }
@@ -81,12 +97,21 @@ export function remove(subject_code) {
   return true;
 }
 
+// Wipe every recorded grade. Only the enrollments key — the plan, language and
+// GPA-visibility preferences are settings, not data, and surviving a reset is
+// the behaviour you want from them.
+export function clearAll() {
+  const n = Object.keys(readMap()).length;
+  localStorage.removeItem(KEY);
+  return n;
+}
+
 // Bulk upsert (transcript commit) — all or nothing isn't needed locally, but we
 // write once at the end so a mid-loop failure can't leave a half-applied state.
 export function upsertMany(rows) {
   const map = readMap();
-  for (const { subject_code, term, grade } of rows) {
-    map[subject_code] = { subject_code, term, grade };
+  for (const r of rows) {
+    map[r.subject_code] = toRow(r);
   }
   writeMap(map);
   return rows.length;
