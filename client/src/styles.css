@@ -419,79 +419,184 @@ body {
   font-style: italic;
 }
 
-/* --- "Where to copy" visual guide --- */
-.copy-guide {
+/* --- "How to copy" animated guide ---------------------------------------
+   A small redraw of the CMU registration table with a cursor that drags the
+   selection down it, then flashes the copy shortcut. Decorative: the numbered
+   steps underneath say the same thing in words. */
+.guide {
   margin-top: 14px;
-  border: 1px dashed var(--color-surface-2);
+  border: 1px dashed var(--color-border-strong);
   border-radius: 12px;
-  padding: 12px 14px 14px;
+  padding: 13px 14px 4px;
   background: var(--color-surface-2);
 }
 
-.copy-guide-title {
+.guide-title {
   font-size: 12.5px;
   font-weight: 700;
   color: var(--color-ink-strong);
   margin-bottom: 10px;
 }
 
-.mini-table {
-  font-size: 11.5px;
-  font-variant-numeric: tabular-nums;
+/* The stage the cursor moves over — positioning context for the overlays. */
+.guide-stage {
+  position: relative;
   border-radius: 8px;
   overflow: hidden;
   background: var(--color-surface);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  user-select: none;
 }
 
-.mini-row {
+/* Registration-site blue, not app copper: this depicts another product, and
+   the colour is the cue for "the page you should be looking at". */
+.guide-head,
+.guide-row,
+.guide-total {
   display: grid;
-  grid-template-columns: 26px 60px minmax(0, 1fr) 34px;
+  grid-template-columns: 52px minmax(0, 1fr) 40px;
   gap: 8px;
-  padding: 6px 10px;
+  padding: 0 9px;
   align-items: center;
+  height: 21px;
 }
 
-.mini-head {
-  color: var(--color-subtle);
+.guide-head {
+  background: #2f6d99;
+  color: #fff;
   font-weight: 700;
+  font-size: 9px;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
-  font-size: 9.5px;
-  letter-spacing: 0.04em;
 }
 
-.mini-title {
+.guide-rows {
+  position: relative;
+}
+
+.guide-row {
+  position: relative;
+  z-index: 1;
+  color: var(--color-ink);
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.guide-code {
+  color: var(--color-muted);
+}
+
+.guide-name {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: var(--color-ink);
 }
 
-/* The highlighted "select these" band drawn over the example rows. */
-.mini-select-band {
+.guide-num {
+  text-align: right;
+}
+
+.guide-total {
   position: relative;
-  border: 2px solid var(--color-copper);
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--color-copper) 10%, transparent);
-}
-
-.mini-select-tag {
-  position: absolute;
-  top: -9px;
-  right: 8px;
-  background: var(--color-copper);
+  z-index: 1;
+  background: #2f6d99;
   color: #fff;
-  font-size: 9.5px;
   font-weight: 700;
-  padding: 1px 7px;
-  border-radius: 999px;
-  white-space: nowrap;
 }
 
-.copy-guide-step {
-  margin: 12px 2px 0;
+/* 4 rows x 21px. The band stops above the total row — that line isn't needed,
+   though including it does no harm. */
+.guide-band {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 0;
+  z-index: 0;
+  background: #accef7;
+  animation: guide-band 7s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.guide-cursor {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  animation: guide-cursor 7s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.guide-key {
+  position: absolute;
+  right: 10px;
+  bottom: 8px;
+  z-index: 2;
+  background: var(--color-ink);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  opacity: 0;
+  animation: guide-key 7s ease infinite;
+}
+
+/* Cursor: settles on the first row, drags to the last, holds. */
+@keyframes guide-cursor {
+  0% { transform: translate(14px, 14px); opacity: 0; }
+  6% { transform: translate(14px, 24px); opacity: 1; }
+  16% { transform: translate(18px, 30px); opacity: 1; }
+  52% { transform: translate(150px, 96px); opacity: 1; }
+  90% { transform: translate(150px, 96px); opacity: 1; }
+  100% { transform: translate(150px, 96px); opacity: 0; }
+}
+
+/* Selection paints in behind it, on the same timing so they stay locked. */
+@keyframes guide-band {
+  0%, 16% { height: 0; opacity: 0; }
+  17% { height: 0; opacity: 1; }
+  52% { height: 84px; opacity: 1; }
+  90% { height: 84px; opacity: 1; }
+  100% { height: 84px; opacity: 0; }
+}
+
+@keyframes guide-key {
+  0%, 56% { opacity: 0; transform: scale(0.92); }
+  62% { opacity: 1; transform: scale(1); }
+  84% { opacity: 1; transform: scale(1); }
+  92%, 100% { opacity: 0; transform: scale(1); }
+}
+
+.guide-steps {
+  margin: 11px 0 0;
+  padding-left: 17px;
   font-size: 11.5px;
-  line-height: 1.55;
+  line-height: 1.65;
   color: var(--color-muted);
+}
+
+.guide-steps li {
+  padding-left: 2px;
+}
+
+.guide-steps li::marker {
+  color: var(--color-copper);
+  font-weight: 700;
+}
+
+/* Stopped, the guide shows its END state — fully selected with the shortcut
+   visible — which is the frame that carries the instruction. */
+@media (prefers-reduced-motion: reduce) {
+  .guide-band {
+    animation: none;
+    height: 84px;
+  }
+  .guide-cursor {
+    animation: none;
+    transform: translate(150px, 96px);
+  }
+  .guide-key {
+    animation: none;
+    opacity: 1;
+  }
 }
 
 .btn-ghost,

@@ -204,37 +204,81 @@ export default function TranscriptImport({ onImported }) {
   );
 }
 
-// A tiny mock of a grade-portal table showing which rows to select and copy.
-// Pure CSS/markup (no image) so it stays crisp and theme-aware.
+// The CMU registration site, redrawn small and animated: a cursor drags down
+// the course rows, the selection paints in behind it, then ⌘C flashes. Showing
+// the gesture beats describing it — the hard part isn't understanding "copy the
+// rows", it's knowing WHERE on that dense page to start the drag.
+//
+// Pure CSS/SVG rather than a GIF: it stays crisp at any zoom, switches language
+// and theme with the app, weighs nothing, and needs no asset pipeline. The
+// animation is decorative — the numbered steps below carry the same
+// instructions in text, so nothing is lost when it's stopped.
+//
+// The header keeps the registration site's blue instead of the app's copper on
+// purpose: this is a picture OF another product, and the colour is how you
+// recognise the page you're supposed to be on.
+const GUIDE_ROWS = [
+  ['208262', 'Elementary Statistics for Sci…', '3.00'],
+  ['954310', 'Information Systems for Ent…', '3.00'],
+  ['954348', 'Web Programming', '2.00'],
+  ['954365', 'Knowledge Management Sys…', '3.00'],
+];
+
+const REG_URL =
+  'https://www1.reg.cmu.ac.th/registrationoffice/student/main.php?mainfile=studentgrad';
+
 function CopyGuide({ t }) {
-  const rows = [
-    ['1', '001101', 'Fundamental English 1', 'A'],
-    ['2', '954140', 'Information Technology Literacy', 'A'],
-    ['3', '208262', 'Elementary Statistics', 'B+'],
-  ];
   return (
-    <div className="copy-guide">
-      <div className="copy-guide-title">📋 {t('guide.title')}</div>
-      <div className="mini-table">
-        <div className="mini-row mini-head">
-          <span>{t('guide.colNo')}</span>
+    <div className="guide">
+      <div className="guide-title">{t('guide.title')}</div>
+
+      <div className="guide-stage" aria-hidden="true">
+        <div className="guide-head">
           <span>{t('guide.colCode')}</span>
           <span>{t('guide.colTitle')}</span>
-          <span>{t('guide.colGrade')}</span>
+          <span className="guide-num">{t('guide.colCredit')}</span>
         </div>
-        <div className="mini-select-band">
-          {rows.map((r) => (
-            <div className="mini-row" key={r[1]}>
-              <span>{r[0]}</span>
-              <span>{r[1]}</span>
-              <span className="mini-title">{r[2]}</span>
-              <span>{r[3]}</span>
+
+        <div className="guide-rows">
+          {/* Grows downward in step with the cursor — the browser's own
+              selection blue, so it reads instantly as "text selected". */}
+          <span className="guide-band" />
+          {GUIDE_ROWS.map((r) => (
+            <div className="guide-row" key={r[0]}>
+              <span className="guide-code">{r[0]}</span>
+              <span className="guide-name">{r[1]}</span>
+              <span className="guide-num">{r[2]}</span>
             </div>
           ))}
-          <span className="mini-select-tag">{t('guide.selectHint')}</span>
+          <div className="guide-total">
+            <span>{t('guide.total')}</span>
+            <span className="guide-num">18.00</span>
+          </div>
         </div>
+
+        <svg className="guide-cursor" width="14" height="18" viewBox="0 0 14 18">
+          <path
+            d="M1 1l11 8.5-5 .8 2.6 5.4-2.3 1.1-2.6-5.4L1 14.6z"
+            fill="#2b2420"
+            stroke="#fff"
+            strokeWidth="1.2"
+            strokeLinejoin="round"
+          />
+        </svg>
+        <span className="guide-key">{t('guide.copyKey')}</span>
       </div>
-      <p className="copy-guide-step">{t('guide.step')}</p>
+
+      {/* A real sequence, so it's numbered — the order is the instruction. */}
+      <ol className="guide-steps">
+        <li>
+          {t('guide.step1')}{' '}
+          <a href={REG_URL} target="_blank" rel="noopener noreferrer">
+            reg.cmu.ac.th
+          </a>
+        </li>
+        <li>{t('guide.step2')}</li>
+        <li>{t('guide.step3')}</li>
+      </ol>
     </div>
   );
 }

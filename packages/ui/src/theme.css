@@ -233,87 +233,47 @@
     color: var(--color-subtle);
   }
 
-  /* Phones: the smallest requirement can't hold a label beside a 15:1 bigger
-     one, so the spine turns vertical — proportion moves to height, where
-     there's room to spare. */
+  /* Phones: stay horizontal, just scale down. The bar reads as one degree left
+     to right, and turning it on its side threw that away for the sake of label
+     room. Instead the track thins, the type drops, and the segment floor
+     shrinks to 54px — still a comfortable touch target, and 3 x 54 fits inside
+     the narrowest phone with the card padding accounted for. Labels wrap to two
+     lines rather than fighting for a single one. */
   @media (max-width: 640px) {
-    .camt-spine {
-      display: flex;
-      gap: 12px;
-    }
-    .camt-spine > div:first-child {
-      flex-direction: column;
-      gap: 4px;
-      flex: 0 0 40px;
-      min-height: 230px;
-    }
-    .camt-spine > div:last-child {
-      flex-direction: column;
-      gap: 4px;
-      flex: 1;
-      min-height: 230px;
-      min-width: 0;
-    }
     .camt-spine-track {
-      height: 100%;
+      height: 26px;
+      border-radius: var(--radius-md);
     }
 
-    /* The horizontal floor is a WIDTH, which in a column flex container would
-       apply to the cross axis and blow the bar column open. Swap it for a
-       height floor so the smallest band stays tappable. */
+    /* Overrides the JS min-width floor, which is sized for desktop. */
     .camt-spine-seg,
     .camt-spine-label {
-      min-width: 0 !important;
-      min-height: 40px;
+      min-width: 54px !important;
     }
 
-    .camt-spine-seg {
-      padding: 0 0 0 7px;
-    }
-    /* Selection marker moves to the leading edge when the spine is vertical. */
-    .camt-spine-seg::after {
-      left: 0;
-      right: auto;
-      top: 0;
-      bottom: 0;
-      width: 3px;
-      height: auto;
+    .camt-spine-check {
+      font-size: 12px;
     }
 
-    /* Fills top-down, matching the left-to-right fill of the horizontal spine. */
-    .camt-spine-fill {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      width: 100% !important;
-      height: var(--fill-pct, 0%);
-      transition: height 0.55s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    /* Same swap for the underway band: it stacks BELOW the earned fill instead
-       of to its right, so --fill-start becomes a top offset and the boundary
-       rule moves from the leading edge to the top edge. */
-    .camt-spine .camt-underway {
-      left: 0;
-      right: 0;
-      inset-inline-start: auto !important;
-      width: 100% !important;
-      top: var(--fill-start, 0%);
-      height: var(--fill-pct, 0%);
-      border-inline-start: 0;
-      border-block-start: 2px solid var(--color-copper);
-      transition:
-        height 0.55s cubic-bezier(0.4, 0, 0.2, 1),
-        top 0.55s cubic-bezier(0.4, 0, 0.2, 1);
-    }
     .camt-spine-label {
-      align-items: center;
-      padding: 0 2px;
+      padding: 0 1px;
       white-space: normal;
+      gap: 2px;
     }
-    /* Vertical labels have a full column to themselves — no need to spill. */
-    .camt-spine-label:last-child {
-      justify-content: flex-start;
+
+    .camt-spine-label-name {
+      font-size: 9.5px;
+      line-height: 1.25;
+      /* Two lines then ellipsis: a wrapped name beats a truncated one, but a
+         four-line name would push the tree off the first screen. */
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .camt-spine-label-num {
+      font-size: 9.5px;
     }
   }
 }
