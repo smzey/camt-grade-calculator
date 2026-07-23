@@ -224,8 +224,14 @@ const GUIDE_ROWS = [
   ['954365', 'Knowledge Management Sys…', '3.00'],
 ];
 
-const REG_URL =
+// The two documents this modal accepts live on two different registration-office
+// pages, so both are linked and labelled by what they hold — a student who wants
+// to record this term's courses shouldn't have to work out that "exam calendar"
+// is where the class schedule lives.
+const REG_GRADES_URL =
   'https://www1.reg.cmu.ac.th/registrationoffice/student/main.php?mainfile=studentgrad';
+const REG_SCHEDULE_URL =
+  'https://www1.reg.cmu.ac.th/registrationoffice/student/calendar_exam/';
 
 function CopyGuide({ t }) {
   return (
@@ -271,10 +277,15 @@ function CopyGuide({ t }) {
       {/* A real sequence, so it's numbered — the order is the instruction. */}
       <ol className="guide-steps">
         <li>
-          {t('guide.step1')}{' '}
-          <a href={REG_URL} target="_blank" rel="noopener noreferrer">
-            reg.cmu.ac.th
-          </a>
+          {t('guide.step1')}
+          <span className="guide-links">
+            <a href={REG_GRADES_URL} target="_blank" rel="noopener noreferrer">
+              {t('guide.linkGrades')}
+            </a>
+            <a href={REG_SCHEDULE_URL} target="_blank" rel="noopener noreferrer">
+              {t('guide.linkSchedule')}
+            </a>
+          </span>
         </li>
         <li>{t('guide.step2')}</li>
         <li>{t('guide.step3')}</li>
